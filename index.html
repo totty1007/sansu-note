@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>さんすうノート</title>
+<meta name="description" content="3年生から6年生までの算数を、コツコツ練習できる問題集アプリ">
+<meta name="theme-color" content="#F2A65A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="さんすうノート">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+  :root{
+    --font-round:"Hiragino Maru Gothic ProN","BIZ UDGothic","Yu Gothic Medium","Yu Gothic","Meiryo",sans-serif;
+    --font-body:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+    --paper:#EEF3EF;
+    --paper-card:#FFFFFF;
+    --ink:#233127;
+    --ink-soft:#5B6B60;
+    --line:#D7E2DA;
+    --good:#2E9E5B;
+    --good-bg:#E4F6EA;
+    --bad:#E2564A;
+    --bad-bg:#FBE7E4;
+    --g3:#F2A65A;
+    --g3-bg:#FCEEDD;
+    --g4:#4E9BDE;
+    --g4-bg:#E4F1FB;
+    --g5:#57B37A;
+    --g5-bg:#E4F5EA;
+    --g6:#9C7FD1;
+    --g6-bg:#EEE7F9;
+    --accent: var(--g3);
+    --accent-bg: var(--g3-bg);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 26px 26px;
+    font-family:var(--font-body);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:18px 12px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:480px;
+  }
+  .cover{
+    background:var(--paper-card);
+    border-radius:18px;
+    padding:18px 20px 16px;
+    box-shadow:0 2px 0 rgba(35,49,39,0.08);
+    position:relative;
+    border:2px solid var(--ink);
+    margin-bottom:14px;
+  }
+  .cover::before{
+    content:"";
+    position:absolute;
+    left:26px; top:0; bottom:0;
+    width:2px;
+    background:repeating-linear-gradient(var(--bad) 0 6px, transparent 6px 14px);
+    opacity:.35;
+  }
+  .cover h1{
+    font-family:var(--font-round);
+    font-size:26px;
+    margin:0 0 2px 18px;
+    letter-spacing:.02em;
+  }
+  .cover p{
+    margin:0 0 0 18px;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+
+  .tabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:0;
+  }
+  .tab{
+    flex:1;
+    border:2px solid var(--ink);
+    border-bottom:none;
+    border-radius:12px 12px 0 0;
+    background:#dfe6e1;
+    padding:10px 4px 8px;
+    text-align:center;
+    font-family:var(--font-round);
+    font-size:15px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    position:relative;
+    top:2px;
+    transition:transform .12s ease;
+  }
+  .tab.active{
+    background:var(--accent-bg);
+    color:var(--ink);
+    top:0;
+    box-shadow:0 -2px 0 var(--accent) inset;
+  }
+  .tab .num{ font-size:20px; display:block; font-weight:700;}
+  .tab:active{ transform:translateY(1px); }
+
+  .panel{
+    background:var(--paper-card);
+    border:2px solid var(--ink);
+    border-radius:0 0 16px 16px;
+    padding:16px 16px 18px;
+  }
+
+  .topics{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    margin-bottom:6px;
+  }
+  .chip{
+    border:2px solid var(--ink);
+    background:#fff;
+    border-radius:999px;
+    padding:6px 13px;
+    font-size:13px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .chip.active{
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent);
+  }
+
+  .record{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:8px 2px 14px;
+    min-height:16px;
+  }
+
+  .quiz-card{
+    background:#fff;
+    border:2px solid var(--ink);
+    border-radius:14px;
+    padding:20px 16px 18px;
+    position:relative;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px);
+    background-size: 100% 27px;
+  }
+  .quiz-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .streak{
+    font-family:var(--font-round);
+    color:var(--accent);
+    font-weight:700;
+  }
+  .question{
+    font-family:var(--font-round);
+    font-size:21px;
+    line-height:1.6;
+    text-align:center;
+    margin:6px 0 16px;
+    word-break:keep-all;
+  }
+  .diagram{ display:flex; justify-content:center; margin:4px 0 14px; }
+  .hissan{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    font-family:var(--font-round);
+    font-size:24px;
+    width:fit-content;
+    margin:0 auto 16px;
+    padding:0 6px;
+  }
+  .hissan .row{ display:flex; }
+  .hissan .op{ width:26px; text-align:left; }
+  .hissan .val{ letter-spacing:2px; }
+  .hissan hr{
+    width:100%;
+    border:none;
+    border-top:3px solid var(--ink);
+    margin:2px 0 6px;
+  }
+
+  .answer-row{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .answer-row input{
+    width:92px;
+    text-align:center;
+    font-size:19px;
+    font-family:var(--font-round);
+    padding:8px 6px;
+    border:2px solid var(--ink);
+    border-radius:8px;
+    background:#FCFCF9;
+  }
+  .answer-row input:focus{ outline:2px solid var(--accent); }
+  .answer-row .lbl{ font-size:14px; color:var(--ink-soft); }
+  .answer-row .unit{ font-size:14px; }
+
+  .feedback{
+    min-height:44px;
+    border-radius:10px;
+    text-align:center;
+    font-size:14px;
+    padding:8px 10px;
+    margin-bottom:12px;
+    display:none;
+  }
+  .feedback.show{ display:block; }
+  .feedback.good{ background:var(--good-bg); color:var(--good); }
+  .feedback.bad{ background:var(--bad-bg); color:var(--bad); }
+  .feedback b{ font-family:var(--font-round); font-size:15px; }
+
+  .actions{ display:flex; justify-content:center; }
+  .btn{
+    font-family:var(--font-round);
+    font-size:16px;
+    padding:11px 30px;
+    border-radius:999px;
+    border:2px solid var(--ink);
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn.secondary{ background:#fff; color:var(--ink); }
+
+  .footnote{
+    text-align:center;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:14px;
+  }
+  svg text{ font-family:var(--font-round); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="cover">
+    <h1>さんすうノート</h1>
+    <p>3年生から6年生までの算数を、コツコツ練習しよう</p>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="panel">
+    <div class="topics" id="topics"></div>
+    <div class="record" id="record"></div>
+
+    <div class="quiz-card">
+      <div class="quiz-top">
+        <span id="progressText">きょう: 0問 / 正解 0問</span>
+        <span class="streak" id="streakText">🔥 0連続</span>
+      </div>
+      <div class="diagram" id="diagram"></div>
+      <div class="question" id="question"></div>
+      <div class="answer-row" id="answerRow"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions">
+        <button class="btn" id="mainBtn">こたえあわせ</button>
+      </div>
+    </div>
+    <div class="footnote">わからない時は、おうちの人と一緒に考えてみよう</div>
+  </div>
+</div>
+
+<script>
+/* ---------- utilities ---------- */
+function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function pick(arr){ return arr[rand(0,arr.length-1)]; }
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ [a,b]=[b,a%b]; } return a||1; }
+function lcm(a,b){ return Math.abs(a*b)/gcd(a,b); }
+function simplifyFrac(n,d){ if(d<0){ n=-n; d=-d; } const g=gcd(n,d)||1; return [n/g, d/g]; }
+function factorial(n){ let r=1; for(let i=2;i<=n;i++) r*=i; return r; }
+function nCk(n,k){ return factorial(n)/(factorial(k)*factorial(n-k)); }
+function fmtFrac(n,d){
+  const [sn,sd]=simplifyFrac(n,d);
+  if(sd===1) return String(sn);
+  return sn+"/"+sd;
+}
+function pad2(x){ return String(x).padStart(2,'0'); }
+
+function parseFracInput(str){
+  str=str.trim();
+  if(str==="") return null;
+  if(str.indexOf('/')>=0){
+    const parts=str.split('/');
+    if(parts.length!==2) return null;
+    const n=parseFloat(parts[0]), d=parseFloat(parts[1]);
+    if(isNaN(n)||isNaN(d)||d===0) return null;
+    return [n,d];
+  }
+  const v=parseFloat(str);
+  if(isNaN(v)) return null;
+  return [v,1];
+}
+function checkFractionAnswer(input, correctN, correctD){
+  const parsed=parseFracInput(input);
+  if(!parsed) return false;
+  const [n,d]=parsed;
+  return Math.abs(n*correctD - correctN*d) < 1e-6;
+}
+function checkRatioAnswer(input, correctA, correctB){
+  const str=input.trim();
+  if(str.indexOf(':')<0 && str.indexOf('：')<0) return false;
+  const parts=str.replace('：',':').split(':');
+  if(parts.length!==2) return false;
+  const a=parseFloat(parts[0]), b=parseFloat(parts[1]);
+  if(isNaN(a)||isNaN(b)) return false;
+  const [ra,rb]=simplifyFrac(a,b);
+  const [ca,cb]=simplifyFrac(correctA, correctB);
+  return ra===ca && rb===cb;
+}
+function checkTimeAnswer(input, correctH, correctM){
+  const m=input.trim().match(/^(\d{1,2})[:：時](\d{1,2})分?$/);
+  if(!m) return false;
+  const h=parseInt(m[1],10)%24, mi=parseInt(m[2],10);
+  return h===(correctH%24) && mi===correctM;
+}
+function checkDecimal(input, correct, tol){
+  const v=parseFloat(input.trim());
+  if(isNaN(v)) return false;
+  return Math.abs(v-correct)<=tol;
+}
+function checkInt(input, correct){
+  const v=parseInt(input.trim(),10);
+  return !isNaN(v) && v===correct;
+}
+
+/* ---------- svg diagram helpers ---------- */
+function svgWrap(inner, w=260, h=170){
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">${inner}</svg>`;
+}
+function angleDiagram(theta1){
+  const cx=130, cy=140, r1=95, r2=60;
+  const phi = 180-theta1; // slant ray angle from +x axis (ccw, screen up)
+  const rad = phi*Math.PI/180;
+  const sx = cx + r1*Math.cos(rad);
+  const sy = cy - r1*Math.sin(rad);
+  const leftLabelX = cx-70, leftLabelY = cy-14;
+  const rightLabelX = cx+50, rightLabelY = cy-14;
+  return svgWrap(`
+    <line x1="${cx-105}" y1="${cy}" x2="${cx+105}" y2="${cy}" stroke="#233127" stroke-width="3"/>
+    <line x1="${cx}" y1="${cy}" x2="${sx}" y2="${sy}" stroke="#233127" stroke-width="3"/>
+    <circle cx="${cx}" cy="${cy}" r="4" fill="#233127"/>
+    <text x="${leftLabelX}" y="${leftLabelY}" font-size="16" fill="#F2A65A" text-anchor="middle">${theta1}°</text>
+    <text x="${rightLabelX}" y="${rightLabelY}" font-size="16" fill="#E2564A" text-anchor="middle">？</text>
+  `,260,160);
+}
+function triangleDiagram(base, height){
+  const bx=40, by=130, bw=190;
+  const apexX = bx+bw*0.4;
+  return svgWrap(`
+    <polygon points="${bx},${by} ${bx+bw},${by} ${apexX},${by-100}" fill="#E4F5EA" stroke="#233127" stroke-width="3"/>
+    <line x1="${apexX}" y1="${by-100}" x2="${apexX}" y2="${by}" stroke="#57B37A" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="${(bx+bx+bw)/2}" y="${by+20}" font-size="15" text-anchor="middle">底辺 ${base}cm</text>
+    <text x="${apexX+10}" y="${by-45}" font-size="15" fill="#57B37A">高さ ${height}cm</text>
+  `,260,175);
+}
+function parallelogramDiagram(base, height){
+  const bx=40, by=130, bw=170, shift=45;
+  return svgWrap(`
+    <polygon points="${bx},${by} ${bx+bw},${by} ${bx+bw-shift},${by-90} ${bx-shift},${by-90}" fill="#E4F5EA" stroke="#233127" stroke-width="3"/>
+    <line x1="${bx+30}" y1="${by-90}" x2="${bx+30}" y2="${by}" stroke="#57B37A" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="${(bx+bx+bw)/2}" y="${by+20}" font-size="15" text-anchor="middle">底辺 ${base}cm</text>
+    <text x="${bx+40}" y="${by-45}" font-size="15" fill="#57B37A">高さ ${height}cm</text>
+  `,260,175);
+}
+function circleDiagram(r){
+  const cx=130, cy=90, R=Math.min(70, 34+r*2);
+  return svgWrap(`
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="#EEE7F9" stroke="#233127" stroke-width="3"/>
+    <line x1="${cx}" y1="${cy}" x2="${cx+R}" y2="${cy}" stroke="#9C7FD1" stroke-width="2"/>
+    <text x="${cx+R/2-6}" y="${cy-8}" font-size="14" fill="#9C7FD1">${r}cm</text>
+  `,260,175);
+}
+
+/* ---------- topic generators ---------- */
+const TOPICS = {
+3:[
+  {id:'addsub3', name:'たし算・ひき算の筆算', gen(){
+    const op = pick(['+','-']);
+    let a,b,ans;
+    if(op==='+'){
+      a=rand(120,4899); b=rand(120,4899);
+      ans=a+b;
+    }else{
+      a=rand(1200,9899); b=rand(120,a-100);
+      ans=a-b;
+    }
+    return { kind:'vertical', a, b, op, answers:[{type:'int', value:ans}] };
+  }},
+  {id:'kake3', name:'かけ算の筆算', gen(){
+    const a=rand(11,98), b=rand(2,9);
+    return { kind:'vertical', a, b, op:'×', answers:[{type:'int', value:a*b}] };
+  }},
+  {id:'wari3', name:'わり算（あまりあり）', gen(){
+    const b=rand(2,9), q=rand(2,12), r=rand(0,b-1);
+    const a=b*q+r;
+    return { kind:'text', text:`${a} ÷ ${b} = `, multiAnswer:true,
+      answers:[{type:'int', value:q, label:'商'},{type:'int', value:r, label:'あまり'}] };
+  }},
+  {id:'jikan3', name:'時こくと時間', gen(){
+    const h=rand(0,23), m=pick([0,5,10,15,20,25,30,35,40,45,50,55]);
+    const add=pick([5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100]);
+    let total=h*60+m+add;
+    const eh=Math.floor(total/60)%24, em=total%60;
+    return { kind:'text', text:`いま ${pad2(h)}時${pad2(m)}分です。${add}分後の時こくは何時何分ですか。`,
+      answerFormat:'time',
+      answers:[{type:'time', h:eh, m:em}] };
+  }},
+],
+4:[
+  {id:'wari4', name:'わり算の筆算（2桁でわる）', gen(){
+    const d=rand(11,45), q=rand(2,9), r=rand(0,d-1);
+    const a=d*q+r;
+    return { kind:'text', text:`${a} ÷ ${d} = `, multiAnswer:true,
+      answers:[{type:'int', value:q, label:'商'},{type:'int', value:r, label:'あまり'}] };
+  }},
+  {id:'shousuu4', name:'小数のたし算・ひき算', gen(){
+    const op=pick(['+','-']);
+    let a=rand(10,899)/10, b=rand(10,899)/10;
+    a=Math.round(a*10)/10; b=Math.round(b*10)/10;
+    if(op==='-' && a<b){ [a,b]=[b,a]; }
+    const ans=Math.round((op==='+'? a+b : a-b)*10)/10;
+    return { kind:'text', text:`${a} ${op} ${b} = `,
+      answers:[{type:'decimal', value:ans, tol:0.05}] };
+  }},
+  {id:'bunsuu4_same', name:'分数のたし算・ひき算（同分母）', gen(){
+    const d=rand(4,10);
+    let n1=rand(1,d-1), n2=rand(1,d-1);
+    const op=pick(['+','-']);
+    if(op==='-' && n1<n2){ [n1,n2]=[n2,n1]; }
+    const rn = op==='+'? n1+n2 : n1-n2;
+    return { kind:'text', text:`\\(\\dfrac{${n1}}{${d}}\\) ${op} \\(\\dfrac{${n2}}{${d}}\\) = `,
+      plainText:`${n1}/${d} ${op} ${n2}/${d} = `,
+      answerFormat:'fraction',
+      answers:[{type:'fraction', n:rn, d:d}] };
+  }},
+  {id:'kakudo4', name:'角度（直線は180°）', gen(){
+    const theta=pick([15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165]);
+    return { kind:'angle', theta,
+      text:'図で、直線にできた角のうち、？の角度は何度ですか。',
+      answers:[{type:'int', value:180-theta}] };
+  }},
+  {id:'gaisuu4', name:'がい数（四捨五入）', gen(){
+    const n=rand(120000,987654);
+    const placeOpt=pick([
+      {name:'千の位', div:10000, mul:10000, roundDiv:1000},
+      {name:'一万の位', div:100000, mul:100000, roundDiv:10000},
+    ]);
+    const roundDiv = placeOpt.roundDiv;
+    const ans = Math.round(n/roundDiv)*roundDiv;
+    return { kind:'text', text:`${n.toLocaleString()} を、${placeOpt.name}までのがい数で表しましょう。`,
+      answers:[{type:'int', value:ans}] };
+  }},
+],
+5:[
+  {id:'shousuu5', name:'小数のかけ算・わり算', gen(){
+    const op=pick(['×','÷']);
+    if(op==='×'){
+      const a=Math.round(rand(11,98))/10, b=Math.round(rand(11,98))/10;
+      const ans=Math.round(a*b*100)/100;
+      return { kind:'text', text:`${a} × ${b} = `, answers:[{type:'decimal', value:ans, tol:0.05}] };
+    }else{
+      const b=Math.round(rand(11,50))/10, q=Math.round(rand(11,80))/10;
+      const a=Math.round(b*q*10)/10;
+      return { kind:'text', text:`${a} ÷ ${b} = `, answers:[{type:'decimal', value:q, tol:0.05}] };
+    }
+  }},
+  {id:'bunsuu5_diff', name:'分数のたし算・ひき算（異分母）', gen(){
+    let d1=pick([2,3,4,5,6]), d2=pick([2,3,4,5,6].filter(x=>x!==d1));
+    let n1=rand(1,d1-1), n2=rand(1,d2-1);
+    const op=pick(['+','-']);
+    const L=lcm(d1,d2);
+    let v1=n1*(L/d1), v2=n2*(L/d2);
+    if(op==='-' && v1<v2){ [n1,n2]=[n2,n1]; [d1,d2]=[d2,d1]; [v1,v2]=[v2,v1]; }
+    const rn = op==='+'? v1+v2 : v1-v2;
+    return { kind:'text', plainText:`${n1}/${d1} ${op} ${n2}/${d2} = `,
+      answerFormat:'fraction',
+      answers:[{type:'fraction', n:rn, d:L}] };
+  }},
+  {id:'wariai5', name:'割合（％）', gen(){
+    const type=pick(['A','B']);
+    if(type==='A'){
+      const percent=pick([10,20,25,40,50,60,75,80,90]);
+      let base;
+      do{ base=rand(4,50)*4; }while((base*percent)%100!==0);
+      const ans=base*percent/100;
+      return { kind:'text', text:`${base}人の ${percent}% は何人ですか。`,
+        answers:[{type:'int', value:ans, unit:'人'}] };
+    }else{
+      const percent=pick([10,20,25,40,50,60,75,80,90]);
+      let whole;
+      do{ whole=rand(4,50)*4; }while((whole*percent)%100!==0);
+      const part=whole*percent/100;
+      return { kind:'text', text:`${part}人は ${whole}人の何％ですか。`,
+        answers:[{type:'int', value:percent, unit:'%'}] };
+    }
+  }},
+  {id:'heikin5', name:'平均', gen(){
+    const n=rand(3,5);
+    const avg=rand(8,40);
+    let nums, last;
+    do{
+      nums=[]; let sum=0;
+      for(let i=0;i<n-1;i++){ const v=avg+rand(-4,4); nums.push(v); sum+=v; }
+      last=avg*n-sum;
+    }while(last<1 || last>60);
+    nums.push(last);
+    return { kind:'text', text:`次の${n}個の数の平均を求めましょう。　${nums.join('、')}`,
+      answers:[{type:'decimal', value:avg, tol:0.15}] };
+  }},
+  {id:'menseki5', name:'図形の面積', gen(){
+    const shape=pick(['triangle','parallelogram']);
+    if(shape==='triangle'){
+      let base=rand(4,20), height=rand(3,15);
+      if((base*height)%2!==0) height++;
+      return { kind:'shape', shapeType:'triangle', base, height,
+        text:'三角形の面積を求めましょう。',
+        answers:[{type:'int', value:base*height/2, unit:'cm²'}] };
+    }else{
+      const base=rand(4,20), height=rand(3,15);
+      return { kind:'shape', shapeType:'parallelogram', base, height,
+        text:'平行四辺形の面積を求めましょう。',
+        answers:[{type:'int', value:base*height, unit:'cm²'}] };
+    }
+  }},
+],
+6:[
+  {id:'bunsuu6', name:'分数のかけ算・わり算', gen(){
+    const op=pick(['×','÷']);
+    const n1=rand(1,8), d1=rand(2,9);
+    const n2=rand(1,8), d2=rand(2,9);
+    let rn, rd;
+    if(op==='×'){ rn=n1*n2; rd=d1*d2; }
+    else{ rn=n1*d2; rd=d1*n2; }
+    return { kind:'text', plainText:`${n1}/${d1} ${op} ${n2}/${d2} = `,
+      answerFormat:'fraction',
+      answers:[{type:'fraction', n:rn, d:rd}] };
+  }},
+  {id:'hi6', name:'比を簡単にする', gen(){
+    const pairs=[[2,3],[3,4],[2,5],[3,5],[4,5],[5,6],[3,2],[4,3],[5,3],[5,4]];
+    const [m,n]=pick(pairs);
+    const k=rand(2,6);
+    return { kind:'text', text:`${m*k} : ${n*k} を簡単な比にしましょう。`,
+      answerFormat:'ratio',
+      answers:[{type:'ratio', a:m, b:n}] };
+  }},
+  {id:'enseki6', name:'円の面積', gen(){
+    const r=rand(2,20);
+    const ans=Math.round(r*r*3.14*100)/100;
+    return { kind:'shape', shapeType:'circle', radius:r,
+      text:'円の面積を求めましょう。円周率は3.14とします。',
+      answers:[{type:'decimal', value:ans, tol:0.05, unit:'cm²'}] };
+  }},
+  {id:'hayasa6', name:'速さ・時間・道のり', gen(){
+    const type=pick(['speed','distance','time']);
+    if(type==='speed'){
+      const time=rand(2,8), speed=rand(20,80);
+      const dist=time*speed;
+      return { kind:'text', text:`${dist}kmを${time}時間で進みました。速さは時速何kmですか。`,
+        answers:[{type:'int', value:speed, unit:'km/時'}] };
+    }else if(type==='distance'){
+      const time=rand(2,8), speed=rand(20,80);
+      return { kind:'text', text:`時速${speed}kmで${time}時間走ると、何km進みますか。`,
+        answers:[{type:'int', value:speed*time, unit:'km'}] };
+    }else{
+      const speed=rand(20,80), time=rand(2,8);
+      const dist=speed*time;
+      return { kind:'text', text:`${dist}kmの道のりを時速${speed}kmで進むと、何時間かかりますか。`,
+        answers:[{type:'int', value:time, unit:'時間'}] };
+    }
+  }},
+  {id:'baai6', name:'場合の数', gen(){
+    const type=pick(['perm','comb']);
+    const names=['A','B','C','D','E'];
+    if(type==='perm'){
+      const n=rand(3,4);
+      return { kind:'text', text:`${names.slice(0,n).join('、')}の${n}人が1列に並びます。並び方は何通りありますか。`,
+        answers:[{type:'int', value:factorial(n), unit:'通り'}] };
+    }else{
+      const n=rand(4,5), k=2;
+      return { kind:'text', text:`${names.slice(0,n).join('、')}の${n}人の中から${k}人を選びます。選び方は何通りありますか。`,
+        answers:[{type:'int', value:nCk(n,k), unit:'通り'}] };
+    }
+  }},
+],
+};
+
+const GRADES=[
+  {id:3, label:'3年生', color:'--g3', bg:'--g3-bg'},
+  {id:4, label:'4年生', color:'--g4', bg:'--g4-bg'},
+  {id:5, label:'5年生', color:'--g5', bg:'--g5-bg'},
+  {id:6, label:'6年生', color:'--g6', bg:'--g6-bg'},
+];
+
+/* ---------- state ---------- */
+let state = {
+  grade:3,
+  topicIdx:0,
+  current:null,
+  streak:0,
+  todayAttempted:0,
+  todayCorrect:0,
+  answered:false,
+};
+let progressData = {};
+const STORAGE_KEY='sansu-progress-v1';
+
+async function loadProgress(){
+  try{
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    progressData = raw ? JSON.parse(raw) : {};
+  }catch(e){ progressData = {}; }
+}
+async function saveProgress(){
+  try{ window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData)); }catch(e){}
+}
+function recordKey(grade, topicId){ return grade+'_'+topicId; }
+function recordResult(grade, topicId, correct){
+  const k=recordKey(grade,topicId);
+  if(!progressData[k]) progressData[k]={attempted:0, correct:0};
+  progressData[k].attempted++;
+  if(correct) progressData[k].correct++;
+  saveProgress();
+}
+
+/* ---------- rendering ---------- */
+const tabsEl=document.getElementById('tabs');
+const topicsEl=document.getElementById('topics');
+const recordEl=document.getElementById('record');
+const diagramEl=document.getElementById('diagram');
+const questionEl=document.getElementById('question');
+const answerRowEl=document.getElementById('answerRow');
+const feedbackEl=document.getElementById('feedback');
+const mainBtn=document.getElementById('mainBtn');
+const progressTextEl=document.getElementById('progressText');
+const streakTextEl=document.getElementById('streakText');
+
+function setAccent(grade){
+  const g=GRADES.find(x=>x.id===grade);
+  document.documentElement.style.setProperty('--accent', getComputedStyle(document.documentElement).getPropertyValue(g.color));
+  document.documentElement.style.setProperty('--accent-bg', getComputedStyle(document.documentElement).getPropertyValue(g.bg));
+}
+
+function renderTabs(){
+  tabsEl.innerHTML='';
+  GRADES.forEach(g=>{
+    const el=document.createElement('div');
+    el.className='tab'+(g.id===state.grade?' active':'');
+    el.innerHTML=`<span class="num">${g.id}</span>年生`;
+    el.onclick=()=>{
+      state.grade=g.id; state.topicIdx=0;
+      setAccent(state.grade);
+      renderTabs(); renderTopics(); nextQuestion();
+    };
+    tabsEl.appendChild(el);
+  });
+}
+
+function renderTopics(){
+  topicsEl.innerHTML='';
+  TOPICS[state.grade].forEach((t,idx)=>{
+    const el=document.createElement('div');
+    el.className='chip'+(idx===state.topicIdx?' active':'');
+    el.textContent=t.name;
+    el.onclick=()=>{ state.topicIdx=idx; renderTopics(); nextQuestion(); };
+    topicsEl.appendChild(el);
+  });
+  renderRecord();
+}
+
+function renderRecord(){
+  const t=TOPICS[state.grade][state.topicIdx];
+  const k=recordKey(state.grade, t.id);
+  const rec=progressData[k];
+  if(rec && rec.attempted>0){
+    const pct=Math.round(rec.correct/rec.attempted*100);
+    recordEl.textContent=`これまでの記録：${rec.attempted}問中${rec.correct}問正解（${pct}%）`;
+  }else{
+    recordEl.textContent='はじめての問題です。がんばろう！';
+  }
+}
+
+function buildAnswerInputs(problem){
+  answerRowEl.innerHTML='';
+  if(problem.answerFormat==='fraction'){
+    const inp=document.createElement('input');
+    inp.type='text'; inp.placeholder='例）3/4'; inp.id='ans0';
+    answerRowEl.appendChild(inp);
+    return;
+  }
+  if(problem.answerFormat==='ratio'){
+    const inp=document.createElement('input');
+    inp.type='text'; inp.placeholder='例）2:3'; inp.id='ans0';
+    answerRowEl.appendChild(inp);
+    return;
+  }
+  if(problem.answerFormat==='time'){
+    const inp=document.createElement('input');
+    inp.type='text'; inp.placeholder='例）9:30'; inp.id='ans0';
+    answerRowEl.appendChild(inp);
+    return;
+  }
+  problem.answers.forEach((a,i)=>{
+    if(a.label){
+      const lbl=document.createElement('span');
+      lbl.className='lbl'; lbl.textContent=a.label;
+      answerRowEl.appendChild(lbl);
+    }
+    const inp=document.createElement('input');
+    inp.type='text'; inp.inputMode='decimal'; inp.id='ans'+i;
+    answerRowEl.appendChild(inp);
+    if(a.unit){
+      const u=document.createElement('span');
+      u.className='unit'; u.textContent=a.unit;
+      answerRowEl.appendChild(u);
+    }
+  });
+}
+
+function renderProblem(problem){
+  diagramEl.innerHTML='';
+  questionEl.innerHTML='';
+  if(problem.kind==='vertical'){
+    const width=Math.max(String(problem.a).length, String(problem.b).length)+1;
+    questionEl.innerHTML = `
+      <div class="hissan">
+        <div class="row"><span class="op"></span><span class="val">${problem.a}</span></div>
+        <div class="row"><span class="op">${problem.op}</span><span class="val">${problem.b}</span></div>
+        <hr>
+      </div>`;
+  }else if(problem.kind==='angle'){
+    diagramEl.innerHTML = angleDiagram(problem.theta);
+    questionEl.textContent = problem.text;
+  }else if(problem.kind==='shape'){
+    if(problem.shapeType==='triangle') diagramEl.innerHTML = triangleDiagram(problem.base, problem.height);
+    else if(problem.shapeType==='parallelogram') diagramEl.innerHTML = parallelogramDiagram(problem.base, problem.height);
+    else if(problem.shapeType==='circle') diagramEl.innerHTML = circleDiagram(problem.radius);
+    questionEl.textContent = problem.text;
+  }else{
+    questionEl.textContent = problem.plainText || problem.text;
+  }
+  buildAnswerInputs(problem);
+}
+
+function formatCorrectAnswer(problem){
+  if(problem.answerFormat==='fraction'){
+    const a=problem.answers[0];
+    return fmtFrac(a.n, a.d);
+  }
+  if(problem.answerFormat==='ratio'){
+    const a=problem.answers[0];
+    return a.a+':'+a.b;
+  }
+  if(problem.answerFormat==='time'){
+    const a=problem.answers[0];
+    return pad2(a.h)+'時'+pad2(a.m)+'分';
+  }
+  return problem.answers.map(a=>{
+    let v=(a.type==='decimal')? a.value : a.value;
+    let s=(a.label? a.label+' ':'')+v+(a.unit||'');
+    return s;
+  }).join('　');
+}
+
+function checkAnswer(problem){
+  if(problem.answerFormat==='fraction'){
+    const val=document.getElementById('ans0').value;
+    const a=problem.answers[0];
+    return checkFractionAnswer(val, a.n, a.d);
+  }
+  if(problem.answerFormat==='ratio'){
+    const val=document.getElementById('ans0').value;
+    const a=problem.answers[0];
+    return checkRatioAnswer(val, a.a, a.b);
+  }
+  if(problem.answerFormat==='time'){
+    const val=document.getElementById('ans0').value;
+    const a=problem.answers[0];
+    return checkTimeAnswer(val, a.h, a.m);
+  }
+  return problem.answers.every((a,i)=>{
+    const val=document.getElementById('ans'+i).value;
+    if(a.type==='int') return checkInt(val, a.value);
+    if(a.type==='decimal') return checkDecimal(val, a.value, a.tol||0.05);
+    return false;
+  });
+}
+
+function nextQuestion(){
+  const t=TOPICS[state.grade][state.topicIdx];
+  state.current = t.gen();
+  state.answered=false;
+  renderProblem(state.current);
+  feedbackEl.className='feedback';
+  feedbackEl.innerHTML='';
+  mainBtn.textContent='こたえあわせ';
+  mainBtn.className='btn';
+  renderRecord();
+  updateTopBar();
+  const firstInput = answerRowEl.querySelector('input');
+  if(firstInput) firstInput.focus();
+}
+
+function updateTopBar(){
+  progressTextEl.textContent = `きょう: ${state.todayAttempted}問 / 正解 ${state.todayCorrect}問`;
+  streakTextEl.textContent = `🔥 ${state.streak}連続`;
+}
+
+mainBtn.addEventListener('click', ()=>{
+  if(!state.answered){
+    const problem=state.current;
+    const ok=checkAnswer(problem);
+    state.answered=true;
+    state.todayAttempted++;
+    if(ok) state.todayCorrect++;
+    state.streak = ok? state.streak+1 : 0;
+    const t=TOPICS[state.grade][state.topicIdx];
+    recordResult(state.grade, t.id, ok);
+    feedbackEl.className='feedback show '+(ok?'good':'bad');
+    if(ok){
+      feedbackEl.innerHTML = '<b>◯ せいかい！</b>';
+    }else{
+      feedbackEl.innerHTML = `<b>✕ おしい！</b><br>正しい答え：${formatCorrectAnswer(problem)}`;
+    }
+    mainBtn.textContent='つぎのもんだい';
+    updateTopBar();
+    renderRecord();
+  }else{
+    nextQuestion();
+  }
+});
+
+answerRowEl.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){ e.preventDefault(); mainBtn.click(); }
+});
+
+/* ---------- init ---------- */
+(async function init(){
+  await loadProgress();
+  setAccent(state.grade);
+  renderTabs();
+  renderTopics();
+  nextQuestion();
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
