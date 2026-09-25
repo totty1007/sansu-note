@@ -267,6 +267,18 @@
     color:#fff;
   }
 
+  .frac{
+    display:inline-flex;
+    flex-direction:column;
+    align-items:center;
+    vertical-align:middle;
+    line-height:1.15;
+    margin:0 3px;
+  }
+  .frac-num{ padding:0 3px 2px; border-bottom:2px solid currentColor; }
+  .frac-den{ padding:2px 3px 0; }
+  .frac-op{ margin:0 6px; }
+
   .feedback{
     min-height:44px;
     border-radius:10px;
@@ -496,10 +508,15 @@ function lcm(a,b){ return Math.abs(a*b)/gcd(a,b); }
 function simplifyFrac(n,d){ if(d<0){ n=-n; d=-d; } const g=gcd(n,d)||1; return [n/g, d/g]; }
 function factorial(n){ let r=1; for(let i=2;i<=n;i++) r*=i; return r; }
 function nCk(n,k){ return factorial(n)/(factorial(k)*factorial(n-k)); }
-function fmtFrac(n,d){
+function fracSpanHTML(n,d){
+  return `<span class="frac"><span class="frac-num">${n}</span><span class="frac-den">${d}</span></span>`;
+}
+function fracHTMLRaw(n,d){
+  return d===1 ? String(n) : fracSpanHTML(n,d);
+}
+function fracHTML(n,d){
   const [sn,sd]=simplifyFrac(n,d);
-  if(sd===1) return String(sn);
-  return sn+"/"+sd;
+  return sd===1 ? String(sn) : fracSpanHTML(sn,sd);
 }
 function pad2(x){ return String(x).padStart(2,'0'); }
 function shuffle(arr){
@@ -641,7 +658,7 @@ function getDistractorValueSets(problem){
   return genSingleDistractors(a.value, {decimal:a.type==='decimal', step:problem.distractorStep, range:problem.distractorRange});
 }
 function formatChoiceFromValueSet(problem, valueSet){
-  if(problem.answerFormat==='fraction') return fmtFrac(valueSet.n, valueSet.d);
+  if(problem.answerFormat==='fraction') return fracHTML(valueSet.n, valueSet.d);
   if(problem.answerFormat==='ratio') return valueSet.a+':'+valueSet.b;
   if(problem.answerFormat==='time') return pad2(valueSet.h)+'時'+pad2(valueSet.m)+'分';
   if(problem.multiAnswer){
@@ -756,8 +773,7 @@ const TOPICS = {
     const op=pick(['+','-']);
     if(op==='-' && n1<n2){ [n1,n2]=[n2,n1]; }
     const rn = op==='+'? n1+n2 : n1-n2;
-    return { kind:'text', text:`\\(\\dfrac{${n1}}{${d}}\\) ${op} \\(\\dfrac{${n2}}{${d}}\\) = `,
-      plainText:`${n1}/${d} ${op} ${n2}/${d} = `,
+    return { kind:'fracExpr', n1, d1:d, op, n2, d2:d,
       answerFormat:'fraction',
       answers:[{type:'fraction', n:rn, d:d}] };
   }},
@@ -802,7 +818,7 @@ const TOPICS = {
     let v1=n1*(L/d1), v2=n2*(L/d2);
     if(op==='-' && v1<v2){ [n1,n2]=[n2,n1]; [d1,d2]=[d2,d1]; [v1,v2]=[v2,v1]; }
     const rn = op==='+'? v1+v2 : v1-v2;
-    return { kind:'text', plainText:`${n1}/${d1} ${op} ${n2}/${d2} = `,
+    return { kind:'fracExpr', n1, d1, op, n2, d2,
       answerFormat:'fraction',
       answers:[{type:'fraction', n:rn, d:L}] };
   }},
@@ -862,7 +878,7 @@ const TOPICS = {
     let rn, rd;
     if(op==='×'){ rn=n1*n2; rd=d1*d2; }
     else{ rn=n1*d2; rd=d1*n2; }
-    return { kind:'text', plainText:`${n1}/${d1} ${op} ${n2}/${d2} = `,
+    return { kind:'fracExpr', n1, d1, op, n2, d2,
       answerFormat:'fraction',
       answers:[{type:'fraction', n:rn, d:rd}] };
   }},
@@ -1199,7 +1215,7 @@ function buildChoices(problem){
     const btn=document.createElement('button');
     btn.type='button';
     btn.className='choice-btn';
-    btn.textContent=text;
+    btn.innerHTML=text;
     btn.addEventListener('click', ()=>{
       if(state.answered) return;
       state.selectedChoiceText=text;
@@ -1272,6 +1288,8 @@ function renderProblem(problem){
     else if(problem.shapeType==='parallelogram') diagramEl.innerHTML = parallelogramDiagram(problem.base, problem.height);
     else if(problem.shapeType==='circle') diagramEl.innerHTML = circleDiagram(problem.radius);
     questionEl.textContent = problem.text;
+  }else if(problem.kind==='fracExpr'){
+    questionEl.innerHTML = `${fracHTMLRaw(problem.n1,problem.d1)}<span class="frac-op">${problem.op}</span>${fracHTMLRaw(problem.n2,problem.d2)}<span class="frac-op">=</span>`;
   }else{
     questionEl.textContent = problem.plainText || problem.text;
   }
