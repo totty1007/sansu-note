@@ -204,27 +204,68 @@
     margin:2px 0 6px;
   }
 
-  .answer-row{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:8px;
-    margin-bottom:14px;
-  }
-  .answer-row input{
-    width:92px;
-    text-align:center;
-    font-size:19px;
-    font-family:var(--font-round);
-    padding:8px 6px;
-    border:2px solid var(--ink);
-    border-radius:8px;
+  .scratch-wrap{
+    border:2px dashed var(--line);
+    border-radius:12px;
+    padding:8px 10px 10px;
+    margin:0 0 14px;
     background:#FCFCF9;
   }
-  .answer-row input:focus{ outline:2px solid var(--accent); }
-  .answer-row .lbl{ font-size:14px; color:var(--ink-soft); }
-  .answer-row .unit{ font-size:14px; }
+  .scratch-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+  }
+  .scratch-label{ font-size:12px; color:var(--ink-soft); }
+  .scratch-clear{
+    font-family:var(--font-body);
+    font-size:12px;
+    border:1px solid var(--ink-soft);
+    background:#fff;
+    color:var(--ink-soft);
+    border-radius:999px;
+    padding:3px 12px;
+    cursor:pointer;
+  }
+  .scratch-clear:active{ transform:translateY(1px); }
+  .scratch-pad{
+    display:block;
+    width:100%;
+    height:130px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px);
+    background-size: 100% 22px;
+    background-color:#fff;
+    touch-action:none;
+    cursor:crosshair;
+  }
+
+  .answer-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .choice-btn{
+    font-family:var(--font-round);
+    font-size:17px;
+    padding:12px 8px;
+    border:2px solid var(--ink);
+    border-radius:12px;
+    background:#fff;
+    color:var(--ink);
+    cursor:pointer;
+    word-break:break-word;
+  }
+  .choice-btn:active{ transform:translateY(1px); }
+  .choice-btn.selected{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
 
   .feedback{
     min-height:44px;
@@ -253,6 +294,8 @@
   }
   .btn:active{ transform:translateY(1px); }
   .btn.secondary{ background:#fff; color:var(--ink); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; }
+  .btn:disabled:active{ transform:none; }
 
   .footnote{
     text-align:center;
@@ -261,6 +304,122 @@
     margin-top:14px;
   }
   svg text{ font-family:var(--font-round); }
+
+  .user-bar-wrap{
+    background:var(--paper-card);
+    border:2px solid var(--ink);
+    border-radius:14px;
+    padding:10px 14px;
+    margin-bottom:14px;
+  }
+  .user-bar-label{ font-size:12px; color:var(--ink-soft); margin-bottom:6px; }
+  .user-bar{ display:flex; flex-wrap:wrap; gap:7px; }
+  .user-chip{
+    display:flex; align-items:center; gap:6px;
+    border:2px solid var(--ink);
+    background:#fff;
+    border-radius:999px;
+    padding:6px 8px 6px 14px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .user-chip.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .user-chip-del{
+    font-size:11px;
+    color:var(--ink-soft);
+    width:18px; height:18px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.06);
+    flex:none;
+  }
+  .user-chip.active .user-chip-del{ color:#fff; background:rgba(255,255,255,0.25); }
+  .user-chip-add{ padding:6px 14px; color:var(--ink-soft); border-style:dashed; }
+
+  .cat-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:0 0 10px;
+    font-size:12px;
+    color:var(--ink-soft);
+    gap:8px;
+  }
+  .cat-book-btn{
+    font-family:var(--font-round);
+    font-size:13px;
+    border:2px solid var(--ink);
+    background:#fff;
+    border-radius:999px;
+    padding:5px 12px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .cat-book-btn:active{ transform:translateY(1px); }
+
+  .cat-overlay{
+    position:fixed; inset:0;
+    background:rgba(35,49,39,0.55);
+    display:flex; align-items:center; justify-content:center;
+    padding:18px;
+    z-index:50;
+  }
+  .cat-overlay.hidden{ display:none; }
+  .cat-modal{
+    background:#fff;
+    border:2px solid var(--ink);
+    border-radius:18px;
+    padding:18px;
+    width:100%;
+    max-width:420px;
+    max-height:82vh;
+    overflow-y:auto;
+  }
+  .cat-modal-top{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:6px;
+  }
+  .cat-modal-top h2{ font-family:var(--font-round); font-size:19px; margin:0; }
+  .cat-close{
+    border:none; background:none; font-size:22px; line-height:1; color:var(--ink-soft); cursor:pointer;
+  }
+  .cat-progress{ font-size:12px; color:var(--ink-soft); margin-bottom:12px; }
+  .cat-tier-label{ font-family:var(--font-round); font-size:13px; margin:12px 0 6px; }
+  .cat-tier{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:4px; }
+  .cat-slot{
+    width:58px; height:100px;
+    border-radius:10px;
+    background:#F4F4F0;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    flex:none;
+    border:1px solid var(--line);
+  }
+  .cat-slot img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .cat-slot.cat-bonus{ width:72px; height:124px; background:linear-gradient(135deg,#FDE7FF,#CDEBFF,#FFF6C9); border-color:#C9A9E0; }
+  .cat-slot.cat-locked{ background:#E7ECE8; }
+  .cat-mystery{ font-family:var(--font-round); font-size:22px; color:var(--ink-soft); opacity:.5; }
+
+  .cat-toast{
+    position:fixed;
+    left:50%; bottom:24px;
+    transform:translate(-50%, 20px);
+    display:flex; align-items:center; gap:10px;
+    background:#fff;
+    border:2px solid var(--ink);
+    border-radius:14px;
+    padding:10px 16px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.18);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:60;
+    max-width:90vw;
+  }
+  .cat-toast.show{ opacity:1; transform:translate(-50%, 0); }
+  .cat-toast-icon{ width:46px; height:78px; flex:none; border-radius:8px; overflow:hidden; }
+  .cat-toast-icon img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .cat-toast-text{ font-family:var(--font-round); font-size:13px; line-height:1.4; }
 </style>
 </head>
 <body>
@@ -271,10 +430,19 @@
     <p>3年生から6年生までの算数を、コツコツ練習しよう</p>
   </div>
 
+  <div class="user-bar-wrap">
+    <div class="user-bar-label">だれがやる？</div>
+    <div class="user-bar" id="userBar"></div>
+  </div>
+
   <div class="tabs" id="tabs"></div>
   <div class="panel">
     <div class="topics" id="topics"></div>
     <div class="record" id="record"></div>
+    <div class="cat-bar">
+      <span id="catPointsText">🐱 つぎのねこまで あと100点</span>
+      <button type="button" id="catBookBtn" class="cat-book-btn">ねこずかん</button>
+    </div>
 
     <div class="quiz-card">
       <div class="quiz-top">
@@ -283,6 +451,13 @@
       </div>
       <div class="diagram" id="diagram"></div>
       <div class="question" id="question"></div>
+      <div class="scratch-wrap">
+        <div class="scratch-top">
+          <span class="scratch-label">✏️ けいさんメモ（フリーハンド）</span>
+          <button type="button" id="scratchClearBtn" class="scratch-clear">けす</button>
+        </div>
+        <canvas id="scratchPad" class="scratch-pad"></canvas>
+      </div>
       <div class="answer-row" id="answerRow"></div>
       <div class="feedback" id="feedback"></div>
       <div class="actions">
@@ -292,6 +467,25 @@
     <div class="footnote">わからない時は、おうちの人と一緒に考えてみよう</div>
   </div>
 </div>
+
+<div class="cat-overlay hidden" id="catOverlay">
+  <div class="cat-modal">
+    <div class="cat-modal-top">
+      <h2>🐱 ねこずかん</h2>
+      <button type="button" id="catCloseBtn" class="cat-close">×</button>
+    </div>
+    <div class="cat-progress" id="catProgressText"></div>
+    <div class="cat-tier-label">ふつうのねこ</div>
+    <div class="cat-tier" id="catTierNormal"></div>
+    <div class="cat-tier-label">シルバーのねこ（ふつうを5匹集めると進化）</div>
+    <div class="cat-tier" id="catTierSilver"></div>
+    <div class="cat-tier-label">ゴールドのねこ（シルバーを5匹集めると進化）</div>
+    <div class="cat-tier" id="catTierGold"></div>
+    <div class="cat-tier-label">🌈 でんせつのねこ（ゴールドを5匹集めるとゲット）</div>
+    <div class="cat-tier" id="catTierBonus"></div>
+  </div>
+</div>
+<div class="cat-toast" id="catToast"></div>
 
 <script>
 /* ---------- utilities ---------- */
@@ -308,52 +502,153 @@ function fmtFrac(n,d){
   return sn+"/"+sd;
 }
 function pad2(x){ return String(x).padStart(2,'0'); }
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=rand(0,i); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
 
-function parseFracInput(str){
-  str=str.trim();
-  if(str==="") return null;
-  if(str.indexOf('/')>=0){
-    const parts=str.split('/');
-    if(parts.length!==2) return null;
-    const n=parseFloat(parts[0]), d=parseFloat(parts[1]);
-    if(isNaN(n)||isNaN(d)||d===0) return null;
-    return [n,d];
+/* ---------- 4択のダミー選択肢(distractor)生成 ---------- */
+function genFractionDistractors(correct){
+  const keyOf=(n,d)=>{ const [sn,sd]=simplifyFrac(n,d); return sn+'/'+sd; };
+  const seen=new Set([keyOf(correct.n, correct.d)]);
+  const out=[];
+  const tryAdd=(n,d)=>{
+    if(d===0) return;
+    const k=keyOf(n,d);
+    if(seen.has(k)) return;
+    seen.add(k); out.push({n,d});
+  };
+  const candidates=[
+    [correct.n+1, correct.d],
+    [Math.max(1,correct.n-1), correct.d],
+    [correct.n, correct.d+1],
+    [correct.n, Math.max(1,correct.d-1)],
+    [correct.d, correct.n],
+    [correct.n+2, correct.d],
+    [correct.n, correct.d+2],
+  ];
+  for(const [n,d] of candidates){ if(out.length>=3) break; tryAdd(n,d); }
+  let bump=3;
+  while(out.length<3){ tryAdd(correct.n+bump, correct.d); if(out.length<3) tryAdd(correct.n, correct.d+bump); bump++; }
+  return out.slice(0,3);
+}
+function genRatioDistractors(correct){
+  const keyOf=(a,b)=>{ const [sa,sb]=simplifyFrac(a,b); return sa+':'+sb; };
+  const seen=new Set([keyOf(correct.a, correct.b)]);
+  const out=[];
+  const tryAdd=(a,b)=>{
+    if(a<=0||b<=0) return;
+    const k=keyOf(a,b);
+    if(seen.has(k)) return;
+    seen.add(k); out.push({a,b});
+  };
+  const candidates=[
+    [correct.b, correct.a],
+    [correct.a+1, correct.b],
+    [correct.a, correct.b+1],
+    [Math.max(1,correct.a-1), correct.b],
+    [correct.a, Math.max(1,correct.b-1)],
+    [correct.a+1, correct.b+1],
+  ];
+  for(const [a,b] of candidates){ if(out.length>=3) break; tryAdd(a,b); }
+  let bump=2;
+  while(out.length<3){ tryAdd(correct.a+bump, correct.b); if(out.length<3) tryAdd(correct.a, correct.b+bump); bump++; }
+  return out.slice(0,3);
+}
+function genTimeDistractors(correct){
+  const keyOf=(h,m)=>pad2(((h%24)+24)%24)+':'+pad2(m);
+  const seen=new Set([keyOf(correct.h, correct.m)]);
+  const out=[];
+  const tryAdd=(h,m)=>{
+    h=((h%24)+24)%24; m=((m%60)+60)%60;
+    const k=keyOf(h,m);
+    if(seen.has(k)) return;
+    seen.add(k); out.push({h,m});
+  };
+  const deltas=[5,-5,10,-10,15,-15,30,-30];
+  for(const d of deltas){
+    if(out.length>=3) break;
+    const total=correct.h*60+correct.m+d;
+    tryAdd(Math.floor(total/60), ((total%60)+60)%60);
   }
-  const v=parseFloat(str);
-  if(isNaN(v)) return null;
-  return [v,1];
+  let bump=1;
+  while(out.length<3){ tryAdd(correct.h+bump, correct.m); bump++; }
+  return out.slice(0,3);
 }
-function checkFractionAnswer(input, correctN, correctD){
-  const parsed=parseFracInput(input);
-  if(!parsed) return false;
-  const [n,d]=parsed;
-  return Math.abs(n*correctD - correctN*d) < 1e-6;
+function genPairDistractors(correctValues){
+  const [cq, cr]=correctValues;
+  const keyOf=(q,r)=>q+'|'+r;
+  const seen=new Set([keyOf(cq,cr)]);
+  const out=[];
+  const tryAdd=(q,r)=>{
+    if(q<0||r<0) return;
+    const k=keyOf(q,r);
+    if(seen.has(k)) return;
+    seen.add(k); out.push([q,r]);
+  };
+  const candidates=[
+    [cr, cq],
+    [cq+1, cr],
+    [Math.max(0,cq-1), cr],
+    [cq, cr+1],
+    [cq, Math.max(0,cr-1)],
+    [cq+1, Math.max(0,cr-1)],
+  ];
+  for(const [q,r] of candidates){ if(out.length>=3) break; tryAdd(q,r); }
+  let bump=2;
+  while(out.length<3){ tryAdd(cq+bump, cr); bump++; }
+  return out.slice(0,3);
 }
-function checkRatioAnswer(input, correctA, correctB){
-  const str=input.trim();
-  if(str.indexOf(':')<0 && str.indexOf('：')<0) return false;
-  const parts=str.replace('：',':').split(':');
-  if(parts.length!==2) return false;
-  const a=parseFloat(parts[0]), b=parseFloat(parts[1]);
-  if(isNaN(a)||isNaN(b)) return false;
-  const [ra,rb]=simplifyFrac(a,b);
-  const [ca,cb]=simplifyFrac(correctA, correctB);
-  return ra===ca && rb===cb;
+function genSingleDistractors(correct, opts){
+  opts = opts || {};
+  const isDecimal = !!opts.decimal;
+  const min = (opts.range && opts.range.min!==undefined) ? opts.range.min : 0;
+  const max = (opts.range && opts.range.max!==undefined) ? opts.range.max : Infinity;
+  const roundVal = isDecimal ? (x)=>Math.round(x*100)/100 : (x)=>Math.round(x);
+  const seen = new Set([roundVal(correct)]);
+  const out=[];
+  const tryAdd=(x)=>{
+    x=roundVal(x);
+    if(x<min || x>max) return;
+    if(seen.has(x)) return;
+    seen.add(x); out.push(x);
+  };
+  const step = opts.step || (isDecimal
+    ? Math.max(0.1, Math.round(Math.abs(correct)*0.1*10)/10)
+    : Math.max(1, Math.round(Math.abs(correct)*0.05)));
+  const smallSteps = isDecimal ? [0.1,-0.1,0.2,-0.2] : [1,-1,2,-2,3,-3];
+  const candidates=[...smallSteps, step, -step, step*2, -step*2];
+  for(const d of candidates){ if(out.length>=3) break; tryAdd(correct+d); }
+  let bump = isDecimal ? 0.1 : Math.max(1, step);
+  while(out.length<3){ tryAdd(correct+bump); bump += isDecimal ? 0.1 : step; }
+  return out.slice(0,3);
 }
-function checkTimeAnswer(input, correctH, correctM){
-  const m=input.trim().match(/^(\d{1,2})[:：時](\d{1,2})分?$/);
-  if(!m) return false;
-  const h=parseInt(m[1],10)%24, mi=parseInt(m[2],10);
-  return h===(correctH%24) && mi===correctM;
+
+function correctValueSet(problem){
+  if(problem.answerFormat==='fraction') return {n:problem.answers[0].n, d:problem.answers[0].d};
+  if(problem.answerFormat==='ratio') return {a:problem.answers[0].a, b:problem.answers[0].b};
+  if(problem.answerFormat==='time') return {h:problem.answers[0].h, m:problem.answers[0].m};
+  if(problem.multiAnswer) return {values:problem.answers.map(a=>a.value)};
+  return problem.answers[0].value;
 }
-function checkDecimal(input, correct, tol){
-  const v=parseFloat(input.trim());
-  if(isNaN(v)) return false;
-  return Math.abs(v-correct)<=tol;
+function getDistractorValueSets(problem){
+  if(problem.answerFormat==='fraction') return genFractionDistractors(correctValueSet(problem));
+  if(problem.answerFormat==='ratio') return genRatioDistractors(correctValueSet(problem));
+  if(problem.answerFormat==='time') return genTimeDistractors(correctValueSet(problem));
+  if(problem.multiAnswer) return genPairDistractors(correctValueSet(problem).values).map(values=>({values}));
+  const a=problem.answers[0];
+  return genSingleDistractors(a.value, {decimal:a.type==='decimal', step:problem.distractorStep, range:problem.distractorRange});
 }
-function checkInt(input, correct){
-  const v=parseInt(input.trim(),10);
-  return !isNaN(v) && v===correct;
+function formatChoiceFromValueSet(problem, valueSet){
+  if(problem.answerFormat==='fraction') return fmtFrac(valueSet.n, valueSet.d);
+  if(problem.answerFormat==='ratio') return valueSet.a+':'+valueSet.b;
+  if(problem.answerFormat==='time') return pad2(valueSet.h)+'時'+pad2(valueSet.m)+'分';
+  if(problem.multiAnswer){
+    return problem.answers.map((a,i)=>(a.label? a.label+' ':'')+valueSet.values[i]+(a.unit||'')).join('　');
+  }
+  const a=problem.answers[0];
+  return (a.label? a.label+' ':'')+valueSet+(a.unit||'');
 }
 
 /* ---------- svg diagram helpers ---------- */
@@ -470,6 +765,7 @@ const TOPICS = {
     const theta=pick([15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165]);
     return { kind:'angle', theta,
       text:'図で、直線にできた角のうち、？の角度は何度ですか。',
+      distractorRange:{min:5,max:175},
       answers:[{type:'int', value:180-theta}] };
   }},
   {id:'gaisuu4', name:'がい数（四捨五入）', gen(){
@@ -481,6 +777,7 @@ const TOPICS = {
     const roundDiv = placeOpt.roundDiv;
     const ans = Math.round(n/roundDiv)*roundDiv;
     return { kind:'text', text:`${n.toLocaleString()} を、${placeOpt.name}までのがい数で表しましょう。`,
+      distractorStep: roundDiv,
       answers:[{type:'int', value:ans}] };
   }},
 ],
@@ -524,6 +821,7 @@ const TOPICS = {
       do{ whole=rand(4,50)*4; }while((whole*percent)%100!==0);
       const part=whole*percent/100;
       return { kind:'text', text:`${part}人は ${whole}人の何％ですか。`,
+        distractorRange:{min:1,max:99},
         answers:[{type:'int', value:percent, unit:'%'}] };
     }
   }},
@@ -629,30 +927,156 @@ let state = {
   grade:3,
   topicIdx:0,
   current:null,
-  streak:0,
-  todayAttempted:0,
-  todayCorrect:0,
   answered:false,
+  correctChoiceText:null,
+  selectedChoiceText:null,
 };
-let progressData = {};
-const STORAGE_KEY='sansu-progress-v1';
 
-async function loadProgress(){
-  try{
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    progressData = raw ? JSON.parse(raw) : {};
-  }catch(e){ progressData = {}; }
+/* ---------- ユーザー(だれがやるか)ごとの記録 ---------- */
+const PROFILES_KEY='sansu-profiles-v2';
+const OLD_PROGRESS_KEY='sansu-progress-v1';
+let profilesState = { users:[], currentUser:null, data:{} };
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function makeEmptyProfile(){
+  return { totalPoints:0, streak:0, todayDate:todayStr(), todayAttempted:0, todayCorrect:0, progress:{} };
 }
-async function saveProgress(){
-  try{ window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData)); }catch(e){}
+function loadProfiles(){
+  try{
+    const raw = window.localStorage.getItem(PROFILES_KEY);
+    if(raw){ profilesState = JSON.parse(raw); return; }
+  }catch(e){}
+  try{
+    const oldRaw = window.localStorage.getItem(OLD_PROGRESS_KEY);
+    if(oldRaw){
+      const migrated = makeEmptyProfile();
+      migrated.progress = JSON.parse(oldRaw) || {};
+      profilesState = { users:['みんな'], currentUser:'みんな', data:{ 'みんな': migrated } };
+      return;
+    }
+  }catch(e){}
+  profilesState = { users:[], currentUser:null, data:{} };
+}
+function saveProfiles(){
+  try{ window.localStorage.setItem(PROFILES_KEY, JSON.stringify(profilesState)); }catch(e){}
+}
+function ensureTodayReset(profile){
+  const t=todayStr();
+  if(profile.todayDate!==t){ profile.todayDate=t; profile.todayAttempted=0; profile.todayCorrect=0; }
+}
+function getCurrentProfile(){
+  const profile = profilesState.data[profilesState.currentUser];
+  ensureTodayReset(profile);
+  return profile;
+}
+function promptNewUserName(){
+  const name = window.prompt('なまえを にゅうりょくしてね（例：たろう）');
+  if(!name) return null;
+  return name.trim().slice(0,12) || null;
+}
+function addUser(name){
+  if(!profilesState.users.includes(name)){
+    profilesState.users.push(name);
+    profilesState.data[name] = makeEmptyProfile();
+  }
+  profilesState.currentUser = name;
+  saveProfiles();
+}
+function deleteUser(name){
+  profilesState.users = profilesState.users.filter(u=>u!==name);
+  delete profilesState.data[name];
+  if(profilesState.currentUser===name){
+    profilesState.currentUser = profilesState.users[0] || null;
+  }
+  saveProfiles();
 }
 function recordKey(grade, topicId){ return grade+'_'+topicId; }
 function recordResult(grade, topicId, correct){
+  const profile=getCurrentProfile();
   const k=recordKey(grade,topicId);
-  if(!progressData[k]) progressData[k]={attempted:0, correct:0};
-  progressData[k].attempted++;
-  if(correct) progressData[k].correct++;
-  saveProgress();
+  if(!profile.progress[k]) profile.progress[k]={attempted:0, correct:0};
+  profile.progress[k].attempted++;
+  if(correct) profile.progress[k].correct++;
+  saveProfiles();
+}
+
+/* ---------- ごほうびのねこ ---------- */
+const CAT_SPECIES=[
+  { id:'tama', name:'たまちゃん' },
+  { id:'kuro', name:'くろまる' },
+  { id:'tora', name:'トラジ郎' },
+  { id:'momo', name:'ももこ' },
+  { id:'sensei', name:'ねこせん' },
+];
+const CAT_BONUS = { id:'jose', name:'ジョゼ', img:'icons/cats/jose_rainbow.jpg' };
+function catImgTag(species, tierKey){
+  return `<img src="icons/cats/${species.id}_${tierKey}.jpg" alt="${species.name}">`;
+}
+const POINTS_PER_CAT=100, CATS_PER_EVOLVE=5;
+function computeCatState(totalPoints){
+  const normalCount=Math.floor(totalPoints/POINTS_PER_CAT);
+  const silverCount=Math.floor(normalCount/CATS_PER_EVOLVE);
+  const goldCount=Math.floor(silverCount/CATS_PER_EVOLVE);
+  const rainbowCount=Math.floor(goldCount/CATS_PER_EVOLVE);
+  return { normalCount, silverCount, goldCount, rainbowCount, pointsInCycle: totalPoints%POINTS_PER_CAT };
+}
+function renderCatBar(){
+  const st=computeCatState(getCurrentProfile().totalPoints);
+  document.getElementById('catPointsText').textContent = `🐱 つぎのねこまで あと${POINTS_PER_CAT-st.pointsInCycle}点`;
+}
+function renderCatTierRow(container, count, tierKey){
+  container.innerHTML='';
+  const unlocked=Math.min(count,5);
+  CAT_SPECIES.forEach((sp,i)=>{
+    const slot=document.createElement('div');
+    const locked = i>=unlocked;
+    slot.className='cat-slot'+(locked? ' cat-locked':'');
+    slot.title = locked? '？？？' : sp.name;
+    slot.innerHTML = locked? '<span class="cat-mystery">？</span>' : catImgTag(sp, tierKey);
+    container.appendChild(slot);
+  });
+}
+function renderCatBonusSlot(container, count){
+  container.innerHTML='';
+  const slot=document.createElement('div');
+  const locked = count<=0;
+  slot.className='cat-slot cat-bonus'+(locked? ' cat-locked':'');
+  slot.title = locked? '？？？' : `${CAT_BONUS.name}（×${count}）`;
+  slot.innerHTML = locked? '<span class="cat-mystery">？</span>' : `<img src="${CAT_BONUS.img}" alt="${CAT_BONUS.name}">`;
+  container.appendChild(slot);
+}
+function renderCatBook(){
+  const profile=getCurrentProfile();
+  const st=computeCatState(profile.totalPoints);
+  document.getElementById('catProgressText').textContent =
+    `つぎのねこまで あと${POINTS_PER_CAT-st.pointsInCycle}点　|　ふつう${st.normalCount}匹　シルバー${st.silverCount}匹　ゴールド${st.goldCount}匹`;
+  renderCatTierRow(document.getElementById('catTierNormal'), st.normalCount, 'normal');
+  renderCatTierRow(document.getElementById('catTierSilver'), st.silverCount, 'silver');
+  renderCatTierRow(document.getElementById('catTierGold'), st.goldCount, 'gold');
+  renderCatBonusSlot(document.getElementById('catTierBonus'), st.rainbowCount);
+}
+let catToastTimer=null;
+function showCatToast(html, label){
+  const el=document.getElementById('catToast');
+  el.innerHTML = `<div class="cat-toast-icon">${html}</div><div class="cat-toast-text">${label}</div>`;
+  el.classList.add('show');
+  clearTimeout(catToastTimer);
+  catToastTimer=setTimeout(()=>{ el.classList.remove('show'); }, 3200);
+}
+function checkCatMilestones(beforePoints, afterPoints){
+  const before=computeCatState(beforePoints), after=computeCatState(afterPoints);
+  if(after.rainbowCount>before.rainbowCount){
+    showCatToast(`<img src="${CAT_BONUS.img}" alt="${CAT_BONUS.name}">`, `🌈 でんせつのねこを<br>ゲット！「${CAT_BONUS.name}」`);
+  }else if(after.goldCount>before.goldCount){
+    const sp=CAT_SPECIES[(after.goldCount-1)%5];
+    showCatToast(catImgTag(sp,'gold'), `✨ ゴールドねこを<br>ゲット！「${sp.name}」`);
+  }else if(after.silverCount>before.silverCount){
+    const sp=CAT_SPECIES[(after.silverCount-1)%5];
+    showCatToast(catImgTag(sp,'silver'), `🥈 シルバーねこを<br>ゲット！「${sp.name}」`);
+  }else if(after.normalCount>before.normalCount){
+    const sp=CAT_SPECIES[(after.normalCount-1)%5];
+    showCatToast(catImgTag(sp,'normal'), `🐱 ねこを<br>ゲット！「${sp.name}」`);
+  }
 }
 
 /* ---------- rendering ---------- */
@@ -703,7 +1127,7 @@ function renderTopics(){
 function renderRecord(){
   const t=TOPICS[state.grade][state.topicIdx];
   const k=recordKey(state.grade, t.id);
-  const rec=progressData[k];
+  const rec=getCurrentProfile().progress[k];
   if(rec && rec.attempted>0){
     const pct=Math.round(rec.correct/rec.attempted*100);
     recordEl.textContent=`これまでの記録：${rec.attempted}問中${rec.correct}問正解（${pct}%）`;
@@ -712,42 +1136,122 @@ function renderRecord(){
   }
 }
 
-function buildAnswerInputs(problem){
+function renderUserBar(){
+  const bar=document.getElementById('userBar');
+  bar.innerHTML='';
+  profilesState.users.forEach(name=>{
+    const chip=document.createElement('div');
+    chip.className='user-chip'+(name===profilesState.currentUser? ' active':'');
+    const label=document.createElement('span');
+    label.textContent=name;
+    chip.appendChild(label);
+    const del=document.createElement('span');
+    del.className='user-chip-del';
+    del.textContent='×';
+    del.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if(window.confirm(`「${name}」のきろくを削除しますか？`)){
+        deleteUser(name);
+        if(!profilesState.currentUser){
+          addUser('プレイヤー1');
+        }
+        onUserChanged();
+      }
+    });
+    chip.appendChild(del);
+    chip.addEventListener('click', ()=>{
+      if(profilesState.currentUser!==name){
+        profilesState.currentUser=name;
+        saveProfiles();
+        onUserChanged();
+      }
+    });
+    bar.appendChild(chip);
+  });
+  const addBtn=document.createElement('div');
+  addBtn.className='user-chip user-chip-add';
+  addBtn.textContent='＋ ついか';
+  addBtn.addEventListener('click', ()=>{
+    const name=promptNewUserName();
+    if(name){ addUser(name); onUserChanged(); }
+  });
+  bar.appendChild(addBtn);
+}
+
+function onUserChanged(){
+  renderUserBar();
+  state.topicIdx=0;
+  renderTopics();
+  updateTopBar();
+  renderCatBar();
+  nextQuestion();
+}
+
+function buildChoices(problem){
   answerRowEl.innerHTML='';
-  if(problem.answerFormat==='fraction'){
-    const inp=document.createElement('input');
-    inp.type='text'; inp.placeholder='例）3/4'; inp.id='ans0';
-    answerRowEl.appendChild(inp);
-    return;
-  }
-  if(problem.answerFormat==='ratio'){
-    const inp=document.createElement('input');
-    inp.type='text'; inp.placeholder='例）2:3'; inp.id='ans0';
-    answerRowEl.appendChild(inp);
-    return;
-  }
-  if(problem.answerFormat==='time'){
-    const inp=document.createElement('input');
-    inp.type='text'; inp.placeholder='例）9:30'; inp.id='ans0';
-    answerRowEl.appendChild(inp);
-    return;
-  }
-  problem.answers.forEach((a,i)=>{
-    if(a.label){
-      const lbl=document.createElement('span');
-      lbl.className='lbl'; lbl.textContent=a.label;
-      answerRowEl.appendChild(lbl);
-    }
-    const inp=document.createElement('input');
-    inp.type='text'; inp.inputMode='decimal'; inp.id='ans'+i;
-    answerRowEl.appendChild(inp);
-    if(a.unit){
-      const u=document.createElement('span');
-      u.className='unit'; u.textContent=a.unit;
-      answerRowEl.appendChild(u);
-    }
+  const correctText=formatCorrectAnswer(problem);
+  const distractorTexts=getDistractorValueSets(problem).map(vs=>formatChoiceFromValueSet(problem, vs));
+  const shuffled=shuffle([correctText, ...distractorTexts]);
+  state.correctChoiceText=correctText;
+  state.selectedChoiceText=null;
+  mainBtn.disabled=true;
+  shuffled.forEach((text)=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='choice-btn';
+    btn.textContent=text;
+    btn.addEventListener('click', ()=>{
+      if(state.answered) return;
+      state.selectedChoiceText=text;
+      mainBtn.disabled=false;
+      answerRowEl.querySelectorAll('.choice-btn').forEach(b=>b.classList.toggle('selected', b===btn));
+    });
+    answerRowEl.appendChild(btn);
   });
 }
+
+/* ---------- フリーハンドの計算メモ ---------- */
+const scratchCanvas=document.getElementById('scratchPad');
+const scratchCtx=scratchCanvas.getContext('2d');
+let scratchDrawing=false, scratchLast=null;
+function setupScratchCanvas(){
+  const rect=scratchCanvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio || 1;
+  scratchCanvas.width=Math.round(rect.width*dpr);
+  scratchCanvas.height=Math.round(rect.height*dpr);
+  scratchCtx.setTransform(dpr,0,0,dpr,0,0);
+  scratchCtx.lineCap='round';
+  scratchCtx.lineJoin='round';
+  scratchCtx.lineWidth=2.4;
+  scratchCtx.strokeStyle='#233127';
+}
+function clearScratch(){
+  scratchCtx.clearRect(0,0,scratchCanvas.width,scratchCanvas.height);
+}
+function scratchPointFromEvent(e){
+  const rect=scratchCanvas.getBoundingClientRect();
+  return { x:e.clientX-rect.left, y:e.clientY-rect.top };
+}
+scratchCanvas.addEventListener('pointerdown', (e)=>{
+  scratchDrawing=true;
+  scratchCanvas.setPointerCapture(e.pointerId);
+  scratchLast=scratchPointFromEvent(e);
+});
+scratchCanvas.addEventListener('pointermove', (e)=>{
+  if(!scratchDrawing) return;
+  const p=scratchPointFromEvent(e);
+  scratchCtx.beginPath();
+  scratchCtx.moveTo(scratchLast.x, scratchLast.y);
+  scratchCtx.lineTo(p.x, p.y);
+  scratchCtx.stroke();
+  scratchLast=p;
+});
+function stopScratchDrawing(){ scratchDrawing=false; scratchLast=null; }
+scratchCanvas.addEventListener('pointerup', stopScratchDrawing);
+scratchCanvas.addEventListener('pointerleave', stopScratchDrawing);
+scratchCanvas.addEventListener('pointercancel', stopScratchDrawing);
+document.getElementById('scratchClearBtn').addEventListener('click', clearScratch);
+window.addEventListener('resize', setupScratchCanvas);
 
 function renderProblem(problem){
   diagramEl.innerHTML='';
@@ -771,51 +1275,15 @@ function renderProblem(problem){
   }else{
     questionEl.textContent = problem.plainText || problem.text;
   }
-  buildAnswerInputs(problem);
+  buildChoices(problem);
 }
 
 function formatCorrectAnswer(problem){
-  if(problem.answerFormat==='fraction'){
-    const a=problem.answers[0];
-    return fmtFrac(a.n, a.d);
-  }
-  if(problem.answerFormat==='ratio'){
-    const a=problem.answers[0];
-    return a.a+':'+a.b;
-  }
-  if(problem.answerFormat==='time'){
-    const a=problem.answers[0];
-    return pad2(a.h)+'時'+pad2(a.m)+'分';
-  }
-  return problem.answers.map(a=>{
-    let v=(a.type==='decimal')? a.value : a.value;
-    let s=(a.label? a.label+' ':'')+v+(a.unit||'');
-    return s;
-  }).join('　');
+  return formatChoiceFromValueSet(problem, correctValueSet(problem));
 }
 
-function checkAnswer(problem){
-  if(problem.answerFormat==='fraction'){
-    const val=document.getElementById('ans0').value;
-    const a=problem.answers[0];
-    return checkFractionAnswer(val, a.n, a.d);
-  }
-  if(problem.answerFormat==='ratio'){
-    const val=document.getElementById('ans0').value;
-    const a=problem.answers[0];
-    return checkRatioAnswer(val, a.a, a.b);
-  }
-  if(problem.answerFormat==='time'){
-    const val=document.getElementById('ans0').value;
-    const a=problem.answers[0];
-    return checkTimeAnswer(val, a.h, a.m);
-  }
-  return problem.answers.every((a,i)=>{
-    const val=document.getElementById('ans'+i).value;
-    if(a.type==='int') return checkInt(val, a.value);
-    if(a.type==='decimal') return checkDecimal(val, a.value, a.tol||0.05);
-    return false;
-  });
+function checkAnswer(){
+  return state.selectedChoiceText!==null && state.selectedChoiceText===state.correctChoiceText;
 }
 
 function nextQuestion(){
@@ -823,55 +1291,77 @@ function nextQuestion(){
   state.current = t.gen();
   state.answered=false;
   renderProblem(state.current);
+  clearScratch();
   feedbackEl.className='feedback';
   feedbackEl.innerHTML='';
   mainBtn.textContent='こたえあわせ';
   mainBtn.className='btn';
   renderRecord();
   updateTopBar();
-  const firstInput = answerRowEl.querySelector('input');
-  if(firstInput) firstInput.focus();
 }
 
 function updateTopBar(){
-  progressTextEl.textContent = `きょう: ${state.todayAttempted}問 / 正解 ${state.todayCorrect}問`;
-  streakTextEl.textContent = `🔥 ${state.streak}連続`;
+  const profile=getCurrentProfile();
+  progressTextEl.textContent = `きょう: ${profile.todayAttempted}問 / 正解 ${profile.todayCorrect}問`;
+  streakTextEl.textContent = `🔥 ${profile.streak}連続`;
 }
 
 mainBtn.addEventListener('click', ()=>{
   if(!state.answered){
     const problem=state.current;
-    const ok=checkAnswer(problem);
+    const ok=checkAnswer();
     state.answered=true;
-    state.todayAttempted++;
-    if(ok) state.todayCorrect++;
-    state.streak = ok? state.streak+1 : 0;
+    const profile=getCurrentProfile();
+    const beforePoints=profile.totalPoints;
+    profile.todayAttempted++;
+    if(ok){
+      profile.todayCorrect++;
+      profile.streak++;
+      profile.totalPoints++;
+    }else{
+      profile.streak=0;
+    }
     const t=TOPICS[state.grade][state.topicIdx];
     recordResult(state.grade, t.id, ok);
     feedbackEl.className='feedback show '+(ok?'good':'bad');
     if(ok){
       feedbackEl.innerHTML = '<b>◯ せいかい！</b>';
+      checkCatMilestones(beforePoints, profile.totalPoints);
     }else{
       feedbackEl.innerHTML = `<b>✕ おしい！</b><br>正しい答え：${formatCorrectAnswer(problem)}`;
     }
     mainBtn.textContent='つぎのもんだい';
     updateTopBar();
     renderRecord();
+    renderCatBar();
   }else{
     nextQuestion();
   }
 });
 
-answerRowEl.addEventListener('keydown', (e)=>{
-  if(e.key==='Enter'){ e.preventDefault(); mainBtn.click(); }
+document.getElementById('catBookBtn').addEventListener('click', ()=>{
+  renderCatBook();
+  document.getElementById('catOverlay').classList.remove('hidden');
+});
+document.getElementById('catCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('catOverlay').classList.add('hidden');
+});
+document.getElementById('catOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='catOverlay') e.currentTarget.classList.add('hidden');
 });
 
 /* ---------- init ---------- */
-(async function init(){
-  await loadProgress();
+(function init(){
+  loadProfiles();
+  if(profilesState.users.length===0){
+    addUser('プレイヤー1');
+  }
+  setupScratchCanvas();
+  renderUserBar();
   setAccent(state.grade);
   renderTabs();
   renderTopics();
+  renderCatBar();
   nextQuestion();
 })();
 
