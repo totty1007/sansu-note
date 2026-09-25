@@ -318,6 +318,23 @@
   }
   svg text{ font-family:var(--font-round); }
 
+  .hidden{ display:none !important; }
+  .set-result{
+    text-align:center;
+    padding:30px 10px 10px;
+  }
+  .set-result-emoji{ font-size:52px; line-height:1; margin-bottom:10px; }
+  .set-result-title{
+    font-family:var(--font-round);
+    font-size:22px;
+    margin-bottom:8px;
+  }
+  .set-result-score{
+    font-size:15px;
+    color:var(--ink-soft);
+    margin-bottom:20px;
+  }
+
   .user-bar-wrap{
     background:var(--paper-card);
     border:2px solid var(--ink);
@@ -377,7 +394,6 @@
     padding:18px;
     z-index:50;
   }
-  .cat-overlay.hidden{ display:none; }
   .cat-modal{
     background:#fff;
     border:2px solid var(--ink);
@@ -459,22 +475,32 @@
 
     <div class="quiz-card">
       <div class="quiz-top">
-        <span id="progressText">きょう: 0問 / 正解 0問</span>
+        <span id="progressText">セット1・1/10問</span>
         <span class="streak" id="streakText">🔥 0連続</span>
       </div>
-      <div class="diagram" id="diagram"></div>
-      <div class="question" id="question"></div>
-      <div class="scratch-wrap">
-        <div class="scratch-top">
-          <span class="scratch-label">✏️ けいさんメモ（フリーハンド）</span>
-          <button type="button" id="scratchClearBtn" class="scratch-clear">けす</button>
+      <div id="quizPlay">
+        <div class="diagram" id="diagram"></div>
+        <div class="question" id="question"></div>
+        <div class="scratch-wrap">
+          <div class="scratch-top">
+            <span class="scratch-label">✏️ けいさんメモ（フリーハンド）</span>
+            <button type="button" id="scratchClearBtn" class="scratch-clear">けす</button>
+          </div>
+          <canvas id="scratchPad" class="scratch-pad"></canvas>
         </div>
-        <canvas id="scratchPad" class="scratch-pad"></canvas>
+        <div class="answer-row" id="answerRow"></div>
+        <div class="feedback" id="feedback"></div>
+        <div class="actions">
+          <button class="btn" id="mainBtn">こたえあわせ</button>
+        </div>
       </div>
-      <div class="answer-row" id="answerRow"></div>
-      <div class="feedback" id="feedback"></div>
-      <div class="actions">
-        <button class="btn" id="mainBtn">こたえあわせ</button>
+      <div class="set-result hidden" id="setResult">
+        <div class="set-result-emoji" id="setResultEmoji">🎉</div>
+        <div class="set-result-title" id="setResultTitle">セット1 クリア！</div>
+        <div class="set-result-score" id="setResultScore">10問中 0問正解（0点）</div>
+        <div class="actions">
+          <button class="btn" id="nextSetBtn">つぎのセットへ</button>
+        </div>
       </div>
     </div>
     <div class="footnote">わからない時は、おうちの人と一緒に考えてみよう</div>
@@ -940,6 +966,7 @@ const GRADES=[
 ];
 
 /* ---------- state ---------- */
+const QUESTIONS_PER_SET=10, POINTS_PER_QUESTION=10, SETS_PER_CYCLE=10;
 let state = {
   grade:3,
   topicIdx:0,
@@ -947,6 +974,9 @@ let state = {
   answered:false,
   correctChoiceText:null,
   selectedChoiceText:null,
+  setIndex:1,
+  questionInSet:0,
+  setCorrectCount:0,
 };
 
 /* ---------- ユーザー(だれがやるか)ごとの記録 ---------- */
@@ -1123,7 +1153,7 @@ function renderTabs(){
     el.onclick=()=>{
       state.grade=g.id; state.topicIdx=0;
       setAccent(state.grade);
-      renderTabs(); renderTopics(); nextQuestion();
+      renderTabs(); renderTopics(); state.setIndex=1; startNewSet();
     };
     tabsEl.appendChild(el);
   });
@@ -1135,7 +1165,7 @@ function renderTopics(){
     const el=document.createElement('div');
     el.className='chip'+(idx===state.topicIdx?' active':'');
     el.textContent=t.name;
-    el.onclick=()=>{ state.topicIdx=idx; renderTopics(); nextQuestion(); };
+    el.onclick=()=>{ state.topicIdx=idx; state.setIndex=1; renderTopics(); startNewSet(); };
     topicsEl.appendChild(el);
   });
   renderRecord();
@@ -1145,11 +1175,13 @@ function renderRecord(){
   const t=TOPICS[state.grade][state.topicIdx];
   const k=recordKey(state.grade, t.id);
   const rec=getCurrentProfile().progress[k];
+  const profile=getCurrentProfile();
+  const todayText=`きょう: ${profile.todayAttempted}問 / 正解 ${profile.todayCorrect}問`;
   if(rec && rec.attempted>0){
     const pct=Math.round(rec.correct/rec.attempted*100);
-    recordEl.textContent=`これまでの記録：${rec.attempted}問中${rec.correct}問正解（${pct}%）`;
+    recordEl.textContent=`これまでの記録：${rec.attempted}問中${rec.correct}問正解（${pct}%）　|　${todayText}`;
   }else{
-    recordEl.textContent='はじめての問題です。がんばろう！';
+    recordEl.textContent=`はじめての問題です。がんばろう！　|　${todayText}`;
   }
 }
 
@@ -1198,10 +1230,10 @@ function renderUserBar(){
 function onUserChanged(){
   renderUserBar();
   state.topicIdx=0;
+  state.setIndex=1;
   renderTopics();
-  updateTopBar();
   renderCatBar();
-  nextQuestion();
+  startNewSet();
 }
 
 function buildChoices(problem){
@@ -1305,7 +1337,16 @@ function checkAnswer(){
   return state.selectedChoiceText!==null && state.selectedChoiceText===state.correctChoiceText;
 }
 
+function startNewSet(){
+  state.questionInSet=0;
+  state.setCorrectCount=0;
+  document.getElementById('setResult').classList.add('hidden');
+  document.getElementById('quizPlay').classList.remove('hidden');
+  nextQuestion();
+}
+
 function nextQuestion(){
+  state.questionInSet++;
   const t=TOPICS[state.grade][state.topicIdx];
   state.current = t.gen();
   state.answered=false;
@@ -1321,9 +1362,27 @@ function nextQuestion(){
 
 function updateTopBar(){
   const profile=getCurrentProfile();
-  progressTextEl.textContent = `きょう: ${profile.todayAttempted}問 / 正解 ${profile.todayCorrect}問`;
+  progressTextEl.textContent = `セット${state.setIndex}・${state.questionInSet}/${QUESTIONS_PER_SET}問`;
   streakTextEl.textContent = `🔥 ${profile.streak}連続`;
 }
+
+function showSetResult(){
+  document.getElementById('quizPlay').classList.add('hidden');
+  const correct=state.setCorrectCount;
+  document.getElementById('setResultEmoji').textContent =
+    correct===QUESTIONS_PER_SET? '🏆' : correct>=7? '🎉' : correct>=4? '👍' : '💪';
+  document.getElementById('setResultTitle').textContent = `セット${state.setIndex} クリア！`;
+  document.getElementById('setResultScore').textContent =
+    `${QUESTIONS_PER_SET}問中 ${correct}問正解（${correct*POINTS_PER_QUESTION}点）`;
+  const nextIdx = state.setIndex % SETS_PER_CYCLE + 1;
+  document.getElementById('nextSetBtn').textContent = `つぎのセット(${nextIdx})へ`;
+  document.getElementById('setResult').classList.remove('hidden');
+}
+
+document.getElementById('nextSetBtn').addEventListener('click', ()=>{
+  state.setIndex = state.setIndex % SETS_PER_CYCLE + 1;
+  startNewSet();
+});
 
 mainBtn.addEventListener('click', ()=>{
   if(!state.answered){
@@ -1336,7 +1395,8 @@ mainBtn.addEventListener('click', ()=>{
     if(ok){
       profile.todayCorrect++;
       profile.streak++;
-      profile.totalPoints++;
+      profile.totalPoints+=POINTS_PER_QUESTION;
+      state.setCorrectCount++;
     }else{
       profile.streak=0;
     }
@@ -1349,10 +1409,12 @@ mainBtn.addEventListener('click', ()=>{
     }else{
       feedbackEl.innerHTML = `<b>✕ おしい！</b><br>正しい答え：${formatCorrectAnswer(problem)}`;
     }
-    mainBtn.textContent='つぎのもんだい';
+    mainBtn.textContent = state.questionInSet>=QUESTIONS_PER_SET? 'けっかをみる' : 'つぎのもんだい';
     updateTopBar();
     renderRecord();
     renderCatBar();
+  }else if(state.questionInSet>=QUESTIONS_PER_SET){
+    showSetResult();
   }else{
     nextQuestion();
   }
@@ -1381,7 +1443,7 @@ document.getElementById('catOverlay').addEventListener('click', (e)=>{
   renderTabs();
   renderTopics();
   renderCatBar();
-  nextQuestion();
+  startNewSet();
 })();
 
 if('serviceWorker' in navigator){
