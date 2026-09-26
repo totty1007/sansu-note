@@ -462,20 +462,61 @@
     z-index:70;
     cursor:pointer;
   }
-  .cat-zoom-card{
-    display:flex; flex-direction:column; align-items:center; gap:12px;
-    max-width:min(80vw, 340px);
+  .cat-zoom-scene{
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    width:min(80vw, 340px);
   }
-  .cat-zoom-card img{
+  .cat-zoom-card{
     width:100%;
+    aspect-ratio:3/4;
+    perspective:1200px;
+    cursor:pointer;
+  }
+  .cat-zoom-flipper{
+    position:relative;
+    width:100%; height:100%;
+    transition:transform .6s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  .cat-zoom-flipper.flipped{ transform:rotateY(180deg); }
+  .cat-zoom-face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
     border-radius:16px;
     box-shadow:0 10px 30px rgba(0,0,0,0.4);
-    display:block;
+    overflow:hidden;
+  }
+  .cat-zoom-front img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .cat-zoom-back{
+    transform:rotateY(180deg);
+    background:linear-gradient(135deg,#FFF6E5,#FDE9D0);
+    border:3px solid var(--ink);
+    display:flex; flex-direction:column; justify-content:center;
+    padding:18px;
+    box-sizing:border-box;
+  }
+  .cat-zoom-back-name{
+    font-family:var(--font-round);
+    font-size:16px;
+    text-align:center;
+    margin-bottom:10px;
+    color:var(--ink);
+  }
+  .cat-zoom-lore{
+    font-size:13.5px;
+    line-height:1.8;
+    color:var(--ink);
+    text-align:left;
   }
   .cat-zoom-name{
     font-family:var(--font-round);
     font-size:17px;
     color:#fff;
+    text-align:center;
+  }
+  .cat-zoom-hint{
+    font-size:12px;
+    color:rgba(255,255,255,0.75);
     text-align:center;
   }
 
@@ -580,9 +621,20 @@
 </div>
 
 <div class="cat-zoom-overlay hidden" id="catZoomOverlay">
-  <div class="cat-zoom-card">
-    <img id="catZoomImg" src="" alt="">
+  <div class="cat-zoom-scene">
+    <div class="cat-zoom-card" id="catZoomCard">
+      <div class="cat-zoom-flipper" id="catZoomFlipper">
+        <div class="cat-zoom-face cat-zoom-front">
+          <img id="catZoomImg" src="" alt="">
+        </div>
+        <div class="cat-zoom-face cat-zoom-back">
+          <div class="cat-zoom-back-name" id="catZoomBackName"></div>
+          <div class="cat-zoom-lore" id="catZoomLore"></div>
+        </div>
+      </div>
+    </div>
     <div class="cat-zoom-name" id="catZoomName"></div>
+    <div class="cat-zoom-hint">タップでうらがえし</div>
   </div>
 </div>
 <div class="cat-toast" id="catToast"></div>
@@ -1158,6 +1210,24 @@ const CAT_BONUS = { id:'jose', name:'ジョゼ', img:'icons/cats/jose_rainbow.jp
 function catImgTag(species, tierKey){
   return `<img src="icons/cats/${species.id}_${tierKey}.jpg" alt="${species.name}">`;
 }
+const CAT_LORE={
+  tama_normal:'商店街のアイドル猫。会う人みんなに手をふってくれる、ふれあい上手な人気者です。',
+  tama_silver:'天使の聖猫として、みんなの願いごとをそっと見守っているそうです。羽はふわふわで、とても軽いんだとか。',
+  tama_gold:'猫の大将として商店街をまとめる、頼れるボス猫。好物は魚の干物と、みんなの笑顔です。',
+  kuro_normal:'商店街いちの忍者気取り。足音をたてずに歩けるのが自慢ですが、しっぽだけはいつもゆれています。',
+  kuro_silver:'美しい音色をかなでる聖なる音楽家。竪琴の音は、聞いた人の心をやさしくしてくれるといわれています。',
+  kuro_gold:'本物の忍者猫。手裏剣を投げる練習を毎日欠かさない、まじめながんばり屋さんです。',
+  tora_normal:'八百屋の看板猫、トラ市。新鮮な野菜を見分ける目は、店主よりもたしからしいという噂です。',
+  tora_silver:'祈りをささげる聖なる猫。目を閉じて祈るその姿は、まるで小さなお坊さんのようです。',
+  tora_gold:'凛々しい武士猫。桜の下で刀をかまえる姿は、まるで戦国大名のような貫禄です。',
+  momo_normal:'桜の木の下で踊るのが大好きな、はんなりお嬢様猫。着物姿がとても似合います。',
+  momo_silver:'未来をうつす聖なる鏡を持つ猫。鏡をのぞくと、ちょっぴりやさしい気もちになれるとか。',
+  momo_gold:'太夫（花魁）のような気品ただよう猫。かんざしをゆらしながら、しとやかに歩きます。',
+  sensei_normal:'本の虫で物知り博士のねこせん。むずかしい本も一晩で読み終えてしまうそうです。',
+  sensei_silver:'叡智の聖猫。どんな質問にも答えてくれますが、その答えはいつも少し謎めいています。',
+  sensei_gold:'梟（ふくろう）のすがたになった賢者。夜になるとこっそり勉強を教えてくれるという伝説があります。',
+  jose_rainbow:'虹のかなたからやってきた、伝説の聖猫ジョゼ。その姿を見た者には幸運がおとずれるといわれる、まぼろしの存在です。',
+};
 const POINTS_PER_CAT=100, CATS_PER_EVOLVE=5;
 function computeCatState(totalPoints){
   const normalCount=Math.floor(totalPoints/POINTS_PER_CAT);
@@ -1171,9 +1241,12 @@ function renderCatBar(){
   document.getElementById('catPointsText').textContent = `🐱 つぎのねこまで あと${POINTS_PER_CAT-st.pointsInCycle}点`;
 }
 const TIER_LABEL={normal:'ふつう', silver:'シルバー', gold:'ゴールド'};
-function showCatZoom(imgSrc, name){
+function showCatZoom(imgSrc, name, loreKey){
   document.getElementById('catZoomImg').src=imgSrc;
   document.getElementById('catZoomName').textContent=name;
+  document.getElementById('catZoomBackName').textContent=name;
+  document.getElementById('catZoomLore').textContent=CAT_LORE[loreKey]||'';
+  document.getElementById('catZoomFlipper').classList.remove('flipped');
   document.getElementById('catZoomOverlay').classList.remove('hidden');
 }
 function renderCatTierRow(container, count, tierKey){
@@ -1186,7 +1259,7 @@ function renderCatTierRow(container, count, tierKey){
     slot.title = locked? '？？？' : sp.name;
     slot.innerHTML = locked? '<span class="cat-mystery">？</span>' : catImgTag(sp, tierKey);
     if(!locked){
-      slot.addEventListener('click', ()=> showCatZoom(`icons/cats/${sp.id}_${tierKey}.jpg`, `${sp.name}（${TIER_LABEL[tierKey]}）`));
+      slot.addEventListener('click', ()=> showCatZoom(`icons/cats/${sp.id}_${tierKey}.jpg`, `${sp.name}（${TIER_LABEL[tierKey]}）`, `${sp.id}_${tierKey}`));
     }
     container.appendChild(slot);
   });
@@ -1199,7 +1272,7 @@ function renderCatBonusSlot(container, count){
   slot.title = locked? '？？？' : `${CAT_BONUS.name}（×${count}）`;
   slot.innerHTML = locked? '<span class="cat-mystery">？</span>' : `<img src="${CAT_BONUS.img}" alt="${CAT_BONUS.name}">`;
   if(!locked){
-    slot.addEventListener('click', ()=> showCatZoom(CAT_BONUS.img, `${CAT_BONUS.name}（でんせつ）`));
+    slot.addEventListener('click', ()=> showCatZoom(CAT_BONUS.img, `${CAT_BONUS.name}（でんせつ）`, 'jose_rainbow'));
   }
   container.appendChild(slot);
 }
@@ -1560,6 +1633,10 @@ document.getElementById('catOverlay').addEventListener('click', (e)=>{
 });
 document.getElementById('catZoomOverlay').addEventListener('click', (e)=>{
   e.currentTarget.classList.add('hidden');
+});
+document.getElementById('catZoomCard').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('catZoomFlipper').classList.toggle('flipped');
 });
 
 /* ---------- init ---------- */
