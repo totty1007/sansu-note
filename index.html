@@ -1358,6 +1358,7 @@ function nextQuestion(){
   mainBtn.className='btn';
   renderRecord();
   updateTopBar();
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function updateTopBar(){
@@ -1377,6 +1378,7 @@ function showSetResult(){
   const nextIdx = state.setIndex % SETS_PER_CYCLE + 1;
   document.getElementById('nextSetBtn').textContent = `つぎのセット(${nextIdx})へ`;
   document.getElementById('setResult').classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 document.getElementById('nextSetBtn').addEventListener('click', ()=>{
