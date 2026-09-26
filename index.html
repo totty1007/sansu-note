@@ -450,7 +450,34 @@
   .cat-slot img{ width:100%; height:100%; object-fit:cover; display:block; }
   .cat-slot.cat-bonus{ width:72px; height:124px; background:linear-gradient(135deg,#FDE7FF,#CDEBFF,#FFF6C9); border-color:#C9A9E0; }
   .cat-slot.cat-locked{ background:#E7ECE8; }
+  .cat-slot:not(.cat-locked){ cursor:pointer; }
+  .cat-slot:not(.cat-locked):active{ transform:scale(0.96); }
   .cat-mystery{ font-family:var(--font-round); font-size:22px; color:var(--ink-soft); opacity:.5; }
+
+  .cat-zoom-overlay{
+    position:fixed; inset:0;
+    background:rgba(35,49,39,0.72);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    z-index:70;
+    cursor:pointer;
+  }
+  .cat-zoom-card{
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+    max-width:min(80vw, 340px);
+  }
+  .cat-zoom-card img{
+    width:100%;
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    display:block;
+  }
+  .cat-zoom-name{
+    font-family:var(--font-round);
+    font-size:17px;
+    color:#fff;
+    text-align:center;
+  }
 
   .cat-toast{
     position:fixed;
@@ -549,6 +576,13 @@
     <div class="cat-tier" id="catTierGold"></div>
     <div class="cat-tier-label">🌈 でんせつのねこ（ゴールドを5匹集めるとゲット）</div>
     <div class="cat-tier" id="catTierBonus"></div>
+  </div>
+</div>
+
+<div class="cat-zoom-overlay hidden" id="catZoomOverlay">
+  <div class="cat-zoom-card">
+    <img id="catZoomImg" src="" alt="">
+    <div class="cat-zoom-name" id="catZoomName"></div>
   </div>
 </div>
 <div class="cat-toast" id="catToast"></div>
@@ -1136,6 +1170,12 @@ function renderCatBar(){
   const st=computeCatState(getCurrentProfile().totalPoints);
   document.getElementById('catPointsText').textContent = `🐱 つぎのねこまで あと${POINTS_PER_CAT-st.pointsInCycle}点`;
 }
+const TIER_LABEL={normal:'ふつう', silver:'シルバー', gold:'ゴールド'};
+function showCatZoom(imgSrc, name){
+  document.getElementById('catZoomImg').src=imgSrc;
+  document.getElementById('catZoomName').textContent=name;
+  document.getElementById('catZoomOverlay').classList.remove('hidden');
+}
 function renderCatTierRow(container, count, tierKey){
   container.innerHTML='';
   const unlocked=Math.min(count,5);
@@ -1145,6 +1185,9 @@ function renderCatTierRow(container, count, tierKey){
     slot.className='cat-slot'+(locked? ' cat-locked':'');
     slot.title = locked? '？？？' : sp.name;
     slot.innerHTML = locked? '<span class="cat-mystery">？</span>' : catImgTag(sp, tierKey);
+    if(!locked){
+      slot.addEventListener('click', ()=> showCatZoom(`icons/cats/${sp.id}_${tierKey}.jpg`, `${sp.name}（${TIER_LABEL[tierKey]}）`));
+    }
     container.appendChild(slot);
   });
 }
@@ -1155,6 +1198,9 @@ function renderCatBonusSlot(container, count){
   slot.className='cat-slot cat-bonus'+(locked? ' cat-locked':'');
   slot.title = locked? '？？？' : `${CAT_BONUS.name}（×${count}）`;
   slot.innerHTML = locked? '<span class="cat-mystery">？</span>' : `<img src="${CAT_BONUS.img}" alt="${CAT_BONUS.name}">`;
+  if(!locked){
+    slot.addEventListener('click', ()=> showCatZoom(CAT_BONUS.img, `${CAT_BONUS.name}（でんせつ）`));
+  }
   container.appendChild(slot);
 }
 function renderCatBook(){
@@ -1511,6 +1557,9 @@ document.getElementById('catCloseBtn').addEventListener('click', ()=>{
 });
 document.getElementById('catOverlay').addEventListener('click', (e)=>{
   if(e.target.id==='catOverlay') e.currentTarget.classList.add('hidden');
+});
+document.getElementById('catZoomOverlay').addEventListener('click', (e)=>{
+  e.currentTarget.classList.add('hidden');
 });
 
 /* ---------- init ---------- */
