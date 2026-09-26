@@ -294,6 +294,29 @@
   .feedback.bad{ background:var(--bad-bg); color:var(--bad); }
   .feedback b{ font-family:var(--font-round); font-size:15px; }
 
+  .explain-wrap{ margin:0 0 12px; text-align:center; }
+  .explain-toggle{
+    font-family:var(--font-body);
+    font-size:13px;
+    border:1px solid var(--accent);
+    background:#fff;
+    color:var(--accent);
+    border-radius:999px;
+    padding:5px 14px;
+    cursor:pointer;
+  }
+  .explain-toggle:active{ transform:translateY(1px); }
+  .explain-box{
+    margin-top:10px;
+    padding:12px 14px;
+    border-radius:10px;
+    background:var(--accent-bg);
+    color:var(--ink);
+    font-size:14px;
+    line-height:1.7;
+    text-align:left;
+  }
+
   .actions{ display:flex; justify-content:center; }
   .btn{
     font-family:var(--font-round);
@@ -490,6 +513,10 @@
         </div>
         <div class="answer-row" id="answerRow"></div>
         <div class="feedback" id="feedback"></div>
+        <div class="explain-wrap hidden" id="explainWrap">
+          <button type="button" id="explainToggle" class="explain-toggle">📖 とき方を見る</button>
+          <div class="explain-box hidden" id="explainBox"></div>
+        </div>
         <div class="actions">
           <button class="btn" id="mainBtn">こたえあわせ</button>
         </div>
@@ -756,16 +783,21 @@ const TOPICS = {
       a=rand(1200,9899); b=rand(120,a-100);
       ans=a-b;
     }
-    return { kind:'vertical', a, b, op, answers:[{type:'int', value:ans}] };
+    const explain = op==='+'
+      ? `${a} + ${b} = ${ans}<br>位をそろえて、一の位から順にたし算をしましょう。`
+      : `${a} - ${b} = ${ans}<br>位をそろえて、一の位から順にひき算をしましょう。`;
+    return { kind:'vertical', a, b, op, explain, answers:[{type:'int', value:ans}] };
   }},
   {id:'kake3', name:'かけ算の筆算', gen(){
     const a=rand(11,98), b=rand(2,9);
-    return { kind:'vertical', a, b, op:'×', answers:[{type:'int', value:a*b}] };
+    const explain = `${a} × ${b} = ${a*b}<br>一の位から順にかけて、位をそろえてたしましょう。`;
+    return { kind:'vertical', a, b, op:'×', explain, answers:[{type:'int', value:a*b}] };
   }},
   {id:'wari3', name:'わり算（あまりあり）', gen(){
     const b=rand(2,9), q=rand(2,12), r=rand(0,b-1);
     const a=b*q+r;
-    return { kind:'text', text:`${a} ÷ ${b} = `, multiAnswer:true,
+    const explain = `${b} × ${q} = ${b*q}<br>${a} − ${b*q} = ${r}<br>商は${q}、あまりは${r}です。`;
+    return { kind:'text', text:`${a} ÷ ${b} = `, multiAnswer:true, explain,
       answers:[{type:'int', value:q, label:'商'},{type:'int', value:r, label:'あまり'}] };
   }},
   {id:'jikan3', name:'時こくと時間', gen(){
@@ -773,8 +805,9 @@ const TOPICS = {
     const add=pick([5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100]);
     let total=h*60+m+add;
     const eh=Math.floor(total/60)%24, em=total%60;
+    const explain = `${pad2(h)}時${pad2(m)}分の${m}分に${add}分をたすと${m+add}分。<br>60分で1時間くり上がるので、${pad2(eh)}時${pad2(em)}分になります。`;
     return { kind:'text', text:`いま ${pad2(h)}時${pad2(m)}分です。${add}分後の時こくは何時何分ですか。`,
-      answerFormat:'time',
+      answerFormat:'time', explain,
       answers:[{type:'time', h:eh, m:em}] };
   }},
 ],
@@ -782,7 +815,8 @@ const TOPICS = {
   {id:'wari4', name:'わり算の筆算（2桁でわる）', gen(){
     const d=rand(11,45), q=rand(2,9), r=rand(0,d-1);
     const a=d*q+r;
-    return { kind:'text', text:`${a} ÷ ${d} = `, multiAnswer:true,
+    const explain = `${d} × ${q} = ${d*q}<br>${a} − ${d*q} = ${r}<br>商は${q}、あまりは${r}です。`;
+    return { kind:'text', text:`${a} ÷ ${d} = `, multiAnswer:true, explain,
       answers:[{type:'int', value:q, label:'商'},{type:'int', value:r, label:'あまり'}] };
   }},
   {id:'shousuu4', name:'小数のたし算・ひき算', gen(){
@@ -791,7 +825,8 @@ const TOPICS = {
     a=Math.round(a*10)/10; b=Math.round(b*10)/10;
     if(op==='-' && a<b){ [a,b]=[b,a]; }
     const ans=Math.round((op==='+'? a+b : a-b)*10)/10;
-    return { kind:'text', text:`${a} ${op} ${b} = `,
+    const explain = `${a} ${op} ${b} = ${ans}<br>小数点の位置をそろえて計算しましょう。`;
+    return { kind:'text', text:`${a} ${op} ${b} = `, explain,
       answers:[{type:'decimal', value:ans, tol:0.05}] };
   }},
   {id:'bunsuu4_same', name:'分数のたし算・ひき算（同分母）', gen(){
@@ -800,13 +835,15 @@ const TOPICS = {
     const op=pick(['+','-']);
     if(op==='-' && n1<n2){ [n1,n2]=[n2,n1]; }
     const rn = op==='+'? n1+n2 : n1-n2;
-    return { kind:'fracExpr', n1, d1:d, op, n2, d2:d,
+    const explain = `分母が同じなので、分母はそのままで分子だけ計算します。<br>${n1} ${op} ${n2} = ${rn}<br>答え：${fracHTML(rn,d)}`;
+    return { kind:'fracExpr', n1, d1:d, op, n2, d2:d, explain,
       answerFormat:'fraction',
       answers:[{type:'fraction', n:rn, d:d}] };
   }},
   {id:'kakudo4', name:'角度（直線は180°）', gen(){
     const theta=pick([15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165]);
-    return { kind:'angle', theta,
+    const explain = `直線がつくる角度は180°です。<br>180° − ${theta}° = ${180-theta}°`;
+    return { kind:'angle', theta, explain,
       text:'図で、直線にできた角のうち、？の角度は何度ですか。',
       distractorRange:{min:5,max:175},
       answers:[{type:'int', value:180-theta}] };
@@ -819,8 +856,9 @@ const TOPICS = {
     ]);
     const roundDiv = placeOpt.roundDiv;
     const ans = Math.round(n/roundDiv)*roundDiv;
+    const explain = `${placeOpt.name}までのがい数にするので、その1つ下の位を四捨五入します。<br>${n.toLocaleString()} → ${ans.toLocaleString()}`;
     return { kind:'text', text:`${n.toLocaleString()} を、${placeOpt.name}までのがい数で表しましょう。`,
-      distractorStep: roundDiv,
+      distractorStep: roundDiv, explain,
       answers:[{type:'int', value:ans}] };
   }},
 ],
@@ -830,11 +868,13 @@ const TOPICS = {
     if(op==='×'){
       const a=Math.round(rand(11,98))/10, b=Math.round(rand(11,98))/10;
       const ans=Math.round(a*b*100)/100;
-      return { kind:'text', text:`${a} × ${b} = `, answers:[{type:'decimal', value:ans, tol:0.05}] };
+      const explain = `${a} × ${b} = ${ans}<br>小数点の位置に気をつけて計算しましょう。`;
+      return { kind:'text', text:`${a} × ${b} = `, explain, answers:[{type:'decimal', value:ans, tol:0.05}] };
     }else{
       const b=Math.round(rand(11,50))/10, q=Math.round(rand(11,80))/10;
       const a=Math.round(b*q*10)/10;
-      return { kind:'text', text:`${a} ÷ ${b} = `, answers:[{type:'decimal', value:q, tol:0.05}] };
+      const explain = `${a} ÷ ${b} = ${q}<br>小数点の位置に気をつけて計算しましょう。`;
+      return { kind:'text', text:`${a} ÷ ${b} = `, explain, answers:[{type:'decimal', value:q, tol:0.05}] };
     }
   }},
   {id:'bunsuu5_diff', name:'分数のたし算・ひき算（異分母）', gen(){
@@ -845,7 +885,10 @@ const TOPICS = {
     let v1=n1*(L/d1), v2=n2*(L/d2);
     if(op==='-' && v1<v2){ [n1,n2]=[n2,n1]; [d1,d2]=[d2,d1]; [v1,v2]=[v2,v1]; }
     const rn = op==='+'? v1+v2 : v1-v2;
-    return { kind:'fracExpr', n1, d1, op, n2, d2,
+    const explain = `分母をそろえます（${d1}と${d2}の最小公倍数は${L}）。<br>`
+      + `${fracHTMLRaw(n1,d1)} = ${fracHTMLRaw(v1,L)}、${fracHTMLRaw(n2,d2)} = ${fracHTMLRaw(v2,L)}<br>`
+      + `${v1} ${op} ${v2} = ${rn}<br>答え：${fracHTML(rn,L)}`;
+    return { kind:'fracExpr', n1, d1, op, n2, d2, explain,
       answerFormat:'fraction',
       answers:[{type:'fraction', n:rn, d:L}] };
   }},
@@ -856,15 +899,17 @@ const TOPICS = {
       let base;
       do{ base=rand(4,50)*4; }while((base*percent)%100!==0);
       const ans=base*percent/100;
-      return { kind:'text', text:`${base}人の ${percent}% は何人ですか。`,
+      const explain = `割合を求めるときは「もとにする量 × 割合」です。<br>${base} × ${percent}÷100 = ${ans}人`;
+      return { kind:'text', text:`${base}人の ${percent}% は何人ですか。`, explain,
         answers:[{type:'int', value:ans, unit:'人'}] };
     }else{
       const percent=pick([10,20,25,40,50,60,75,80,90]);
       let whole;
       do{ whole=rand(4,50)*4; }while((whole*percent)%100!==0);
       const part=whole*percent/100;
+      const explain = `割合(%)は「くらべる量 ÷ もとにする量 × 100」で求めます。<br>${part} ÷ ${whole} × 100 = ${percent}%`;
       return { kind:'text', text:`${part}人は ${whole}人の何％ですか。`,
-        distractorRange:{min:1,max:99},
+        distractorRange:{min:1,max:99}, explain,
         answers:[{type:'int', value:percent, unit:'%'}] };
     }
   }},
@@ -878,7 +923,9 @@ const TOPICS = {
       last=avg*n-sum;
     }while(last<1 || last>60);
     nums.push(last);
-    return { kind:'text', text:`次の${n}個の数の平均を求めましょう。　${nums.join('、')}`,
+    const total = nums.reduce((s,v)=>s+v,0);
+    const explain = `平均は「合計 ÷ 個数」で求めます。<br>(${nums.join(' + ')}) ÷ ${n} = ${total} ÷ ${n} = ${avg}`;
+    return { kind:'text', text:`次の${n}個の数の平均を求めましょう。　${nums.join('、')}`, explain,
       answers:[{type:'decimal', value:avg, tol:0.15}] };
   }},
   {id:'menseki5', name:'図形の面積', gen(){
@@ -886,12 +933,14 @@ const TOPICS = {
     if(shape==='triangle'){
       let base=rand(4,20), height=rand(3,15);
       if((base*height)%2!==0) height++;
-      return { kind:'shape', shapeType:'triangle', base, height,
+      const explain = `三角形の面積は「底辺 × 高さ ÷ 2」です。<br>${base} × ${height} ÷ 2 = ${base*height/2}cm²`;
+      return { kind:'shape', shapeType:'triangle', base, height, explain,
         text:'三角形の面積を求めましょう。',
         answers:[{type:'int', value:base*height/2, unit:'cm²'}] };
     }else{
       const base=rand(4,20), height=rand(3,15);
-      return { kind:'shape', shapeType:'parallelogram', base, height,
+      const explain = `平行四辺形の面積は「底辺 × 高さ」です。<br>${base} × ${height} = ${base*height}cm²`;
+      return { kind:'shape', shapeType:'parallelogram', base, height, explain,
         text:'平行四辺形の面積を求めましょう。',
         answers:[{type:'int', value:base*height, unit:'cm²'}] };
     }
@@ -902,10 +951,18 @@ const TOPICS = {
     const op=pick(['×','÷']);
     const n1=rand(1,8), d1=rand(2,9);
     const n2=rand(1,8), d2=rand(2,9);
-    let rn, rd;
-    if(op==='×'){ rn=n1*n2; rd=d1*d2; }
-    else{ rn=n1*d2; rd=d1*n2; }
-    return { kind:'fracExpr', n1, d1, op, n2, d2,
+    let rn, rd, explain;
+    if(op==='×'){
+      rn=n1*n2; rd=d1*d2;
+      explain = `分数どうしのかけ算は、分子どうし・分母どうしをかけます。<br>`
+        + `${n1} × ${n2} = ${rn}、${d1} × ${d2} = ${rd}<br>答え：${fracHTML(rn,rd)}`;
+    }else{
+      rn=n1*d2; rd=d1*n2;
+      explain = `分数のわり算は、わる数の分数をひっくり返してかけます。<br>`
+        + `${fracHTMLRaw(n1,d1)} × ${fracHTMLRaw(d2,n2)} として計算：<br>`
+        + `${n1} × ${d2} = ${rn}、${d1} × ${n2} = ${rd}<br>答え：${fracHTML(rn,rd)}`;
+    }
+    return { kind:'fracExpr', n1, d1, op, n2, d2, explain,
       answerFormat:'fraction',
       answers:[{type:'fraction', n:rn, d:rd}] };
   }},
@@ -913,14 +970,16 @@ const TOPICS = {
     const pairs=[[2,3],[3,4],[2,5],[3,5],[4,5],[5,6],[3,2],[4,3],[5,3],[5,4]];
     const [m,n]=pick(pairs);
     const k=rand(2,6);
-    return { kind:'text', text:`${m*k} : ${n*k} を簡単な比にしましょう。`,
+    const explain = `比の両方の数を、同じ数(${k})でわって簡単にします。<br>${m*k} ÷ ${k} : ${n*k} ÷ ${k} = ${m} : ${n}`;
+    return { kind:'text', text:`${m*k} : ${n*k} を簡単な比にしましょう。`, explain,
       answerFormat:'ratio',
       answers:[{type:'ratio', a:m, b:n}] };
   }},
   {id:'enseki6', name:'円の面積', gen(){
     const r=rand(2,20);
     const ans=Math.round(r*r*3.14*100)/100;
-    return { kind:'shape', shapeType:'circle', radius:r,
+    const explain = `円の面積は「半径 × 半径 × 円周率」です。<br>${r} × ${r} × 3.14 = ${ans}cm²`;
+    return { kind:'shape', shapeType:'circle', radius:r, explain,
       text:'円の面積を求めましょう。円周率は3.14とします。',
       answers:[{type:'decimal', value:ans, tol:0.05, unit:'cm²'}] };
   }},
@@ -929,16 +988,19 @@ const TOPICS = {
     if(type==='speed'){
       const time=rand(2,8), speed=rand(20,80);
       const dist=time*speed;
-      return { kind:'text', text:`${dist}kmを${time}時間で進みました。速さは時速何kmですか。`,
+      const explain = `速さは「道のり ÷ 時間」で求めます。<br>${dist} ÷ ${time} = ${speed}km/時`;
+      return { kind:'text', text:`${dist}kmを${time}時間で進みました。速さは時速何kmですか。`, explain,
         answers:[{type:'int', value:speed, unit:'km/時'}] };
     }else if(type==='distance'){
       const time=rand(2,8), speed=rand(20,80);
-      return { kind:'text', text:`時速${speed}kmで${time}時間走ると、何km進みますか。`,
+      const explain = `道のりは「速さ × 時間」で求めます。<br>${speed} × ${time} = ${speed*time}km`;
+      return { kind:'text', text:`時速${speed}kmで${time}時間走ると、何km進みますか。`, explain,
         answers:[{type:'int', value:speed*time, unit:'km'}] };
     }else{
       const speed=rand(20,80), time=rand(2,8);
       const dist=speed*time;
-      return { kind:'text', text:`${dist}kmの道のりを時速${speed}kmで進むと、何時間かかりますか。`,
+      const explain = `時間は「道のり ÷ 速さ」で求めます。<br>${dist} ÷ ${speed} = ${time}時間`;
+      return { kind:'text', text:`${dist}kmの道のりを時速${speed}kmで進むと、何時間かかりますか。`, explain,
         answers:[{type:'int', value:time, unit:'時間'}] };
     }
   }},
@@ -947,11 +1009,14 @@ const TOPICS = {
     const names=['A','B','C','D','E'];
     if(type==='perm'){
       const n=rand(3,4);
-      return { kind:'text', text:`${names.slice(0,n).join('、')}の${n}人が1列に並びます。並び方は何通りありますか。`,
+      const seq = Array.from({length:n}, (_,i)=>n-i).join(' × ');
+      const explain = `${n}人の並び方は、1人目${n}通り、2人目${n-1}通り…と数えます。<br>${seq} = ${factorial(n)}通り`;
+      return { kind:'text', text:`${names.slice(0,n).join('、')}の${n}人が1列に並びます。並び方は何通りありますか。`, explain,
         answers:[{type:'int', value:factorial(n), unit:'通り'}] };
     }else{
       const n=rand(4,5), k=2;
-      return { kind:'text', text:`${names.slice(0,n).join('、')}の${n}人の中から${k}人を選びます。選び方は何通りありますか。`,
+      const explain = `${n}人から${k}人を選ぶ組み合わせは ${n}C${k} で求めます。<br>(${n} × ${n-1}) ÷ (${k} × 1) = ${nCk(n,k)}通り`;
+      return { kind:'text', text:`${names.slice(0,n).join('、')}の${n}人の中から${k}人を選びます。選び方は何通りありますか。`, explain,
         answers:[{type:'int', value:nCk(n,k), unit:'通り'}] };
     }
   }},
@@ -1354,6 +1419,10 @@ function nextQuestion(){
   clearScratch();
   feedbackEl.className='feedback';
   feedbackEl.innerHTML='';
+  document.getElementById('explainWrap').classList.add('hidden');
+  document.getElementById('explainBox').classList.add('hidden');
+  document.getElementById('explainBox').innerHTML='';
+  document.getElementById('explainToggle').textContent='📖 とき方を見る';
   mainBtn.textContent='こたえあわせ';
   mainBtn.className='btn';
   renderRecord();
@@ -1386,6 +1455,13 @@ document.getElementById('nextSetBtn').addEventListener('click', ()=>{
   startNewSet();
 });
 
+document.getElementById('explainToggle').addEventListener('click', ()=>{
+  const box=document.getElementById('explainBox');
+  const opening = box.classList.contains('hidden');
+  box.classList.toggle('hidden');
+  document.getElementById('explainToggle').textContent = opening? 'とじる' : '📖 とき方を見る';
+});
+
 mainBtn.addEventListener('click', ()=>{
   if(!state.answered){
     const problem=state.current;
@@ -1410,6 +1486,10 @@ mainBtn.addEventListener('click', ()=>{
       checkCatMilestones(beforePoints, profile.totalPoints);
     }else{
       feedbackEl.innerHTML = `<b>✕ おしい！</b><br>正しい答え：${formatCorrectAnswer(problem)}`;
+    }
+    if(problem.explain){
+      document.getElementById('explainBox').innerHTML = problem.explain;
+      document.getElementById('explainWrap').classList.remove('hidden');
     }
     mainBtn.textContent = state.questionInSet>=QUESTIONS_PER_SET? 'けっかをみる' : 'つぎのもんだい';
     updateTopBar();
