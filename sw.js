@@ -1,5 +1,5 @@
 // さんすうノート: オフラインでも遊べるようにする最小限のキャッシュ
-const CACHE_NAME = 'sansu-note-v2';
+const CACHE_NAME = 'sansu-note-v3';
 const CORE_FILES = [
   './',
   './index.html',
