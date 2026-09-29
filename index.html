@@ -348,6 +348,15 @@
   .btn:disabled{ opacity:.4; cursor:not-allowed; }
   .btn:disabled:active{ transform:none; }
 
+  .subject-tabs{ margin-bottom:6px; }
+  .subject-tabs .tab{ font-weight:700; }
+  .tier-bar{ margin-top:-4px; }
+  .tier-bar .chip{ font-size:12px; padding:4px 10px; }
+  .qword{ font-size:30px; font-weight:700; line-height:1.4; text-align:center; word-break:break-word; }
+  .qword u{ text-decoration-thickness:3px; text-underline-offset:5px; text-decoration-color:var(--accent); }
+  .qprompt{ font-size:14px; color:var(--ink-soft); text-align:center; margin-top:6px; }
+  .qtier{ display:inline-block; font-size:11px; font-weight:700; color:#fff; background:var(--accent); border-radius:8px; padding:1px 8px; margin-bottom:6px; }
+  .qreview{ display:inline-block; font-size:11px; font-weight:700; color:var(--bad); background:var(--bad-bg); border-radius:8px; padding:1px 8px; margin:0 0 6px 4px; }
   .footnote{
     text-align:center;
     font-size:11px;
@@ -573,8 +582,8 @@
 <div class="app">
 
   <div class="cover">
-    <h1>さんすうノート</h1>
-    <p>3年生から6年生までの算数を、コツコツ練習しよう</p>
+    <h1 id="coverTitle">さんすうノート</h1>
+    <p id="coverSub">3年生から6年生までの算数を、コツコツ練習しよう</p>
   </div>
 
   <div class="user-bar-wrap">
@@ -582,9 +591,11 @@
     <div class="user-bar" id="userBar"></div>
   </div>
 
+  <div class="tabs subject-tabs" id="subjectTabs"></div>
   <div class="tabs" id="tabs"></div>
   <div class="panel">
     <div class="topics" id="topics"></div>
+    <div class="topics tier-bar hidden" id="tierBar"></div>
     <div class="record" id="record"></div>
     <div class="cat-bar">
       <span id="catPointsText">🐱 つぎのねこまで あと100点</span>
@@ -671,6 +682,17 @@
 </div>
 <div class="cat-toast" id="catToast"></div>
 
+<script>window.DECKS=[];function registerDeck(d){window.DECKS.push(d);}</script>
+<script src="data/kanji-e.js"></script>
+<script src="data/kanji-j.js"></script>
+<script src="data/kanji-h.js"></script>
+<script src="data/kobun-j.js"></script>
+<script src="data/kobun-h.js"></script>
+<script src="data/eigo-tango-e.js"></script>
+<script src="data/eigo-tango-j.js"></script>
+<script src="data/eigo-tango-h.js"></script>
+<script src="data/eigo-jukugo-j.js"></script>
+<script src="data/eigo-jukugo-h.js"></script>
 <script>
 /* ---------- utilities ---------- */
 function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
@@ -815,6 +837,7 @@ function genSingleDistractors(correct, opts){
 }
 
 function correctValueSet(problem){
+  if(problem.kind==='card') return problem.correctText;
   if(problem.answerFormat==='fraction') return {n:problem.answers[0].n, d:problem.answers[0].d};
   if(problem.answerFormat==='ratio') return {a:problem.answers[0].a, b:problem.answers[0].b};
   if(problem.answerFormat==='time') return {h:problem.answers[0].h, m:problem.answers[0].m};
@@ -822,6 +845,7 @@ function correctValueSet(problem){
   return problem.answers[0].value;
 }
 function getDistractorValueSets(problem){
+  if(problem.kind==='card') return problem.distractors;
   if(problem.answerFormat==='fraction') return genFractionDistractors(correctValueSet(problem));
   if(problem.answerFormat==='ratio') return genRatioDistractors(correctValueSet(problem));
   if(problem.answerFormat==='time') return genTimeDistractors(correctValueSet(problem));
@@ -830,6 +854,7 @@ function getDistractorValueSets(problem){
   return genSingleDistractors(a.value, {decimal:a.type==='decimal', step:problem.distractorStep, range:problem.distractorRange});
 }
 function formatChoiceFromValueSet(problem, valueSet){
+  if(problem.kind==='card') return escHTML(valueSet);
   if(problem.answerFormat==='fraction') return fracHTML(valueSet.n, valueSet.d);
   if(problem.answerFormat==='ratio') return valueSet.a+':'+valueSet.b;
   if(problem.answerFormat==='time') return pad2(valueSet.h)+'時'+pad2(valueSet.m)+'分';
@@ -1148,9 +1173,115 @@ const GRADES=[
   {id:6, label:'6年生', color:'--g6', bg:'--g6-bg'},
 ];
 
+/* ---------- 教科(さんすう/こくご/えいご)とカード式デッキ ---------- */
+const LEVELS_KE=[
+  {id:'e', label:'小学', color:'--g3', bg:'--g3-bg'},
+  {id:'j', label:'中学', color:'--g4', bg:'--g4-bg'},
+  {id:'h', label:'高校・受験', color:'--g6', bg:'--g6-bg'},
+];
+const SUBJECTS=[
+  {id:'math',   label:'さんすう', cover:'さんすうノート', sub:'3年生から6年生までの算数を、コツコツ練習しよう', levels:GRADES},
+  {id:'kokugo', label:'こくご',   cover:'こくごノート',   sub:'漢字と古文単語を、くり返して覚えよう', levels:LEVELS_KE.map(l=>({...l, id:'k_'+l.id}))},
+  {id:'eigo',   label:'えいご',   cover:'えいごノート',   sub:'英単語と英熟語を、くり返して覚えよう', levels:LEVELS_KE.map(l=>({...l, id:'e_'+l.id}))},
+];
+function subjectOf(id){ return SUBJECTS.find(x=>x.id===id); }
+function escHTML(x){ return String(x).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const TIER_WEIGHT={S:5, A:3, B:1};
+const TIER_LABEL_CARD={S:'◎ 最重要', A:'○ 重要', B:'△ 標準'};
+const TIER_FILTERS=[
+  {id:'all', label:'ぜんぶ', ok:()=>true},
+  {id:'sa',  label:'◎○ 重要', ok:t=>t==='S'||t==='A'},
+  {id:'s',   label:'◎ 最重要のみ', ok:t=>t==='S'},
+];
+const SENT_RE=/\{([^|}]+)\|([^}]+)\}/;
+function renderSentence(sent, showPart){ // showPart: 0=漢字側 1=読み側 を下線で強調
+  const m=SENT_RE.exec(sent); if(!m) return escHTML(sent);
+  return escHTML(sent.slice(0,m.index))+'<u>'+escHTML(m[showPart+1])+'</u>'+escHTML(sent.slice(m.index+m[0].length));
+}
+function pickDistractors(deck, item, correct, get, custom){
+  const out=[];
+  (custom||[]).forEach(x=>{ if(x&&x!==correct&&!out.includes(x)) out.push(x); });
+  if(out.length<3){
+    const pool=[];
+    deck.items.forEach(it=>{
+      if(it===item) return;
+      const v=get(it);
+      if(v&&v!==correct&&!pool.includes(v)) pool.push(v);
+    });
+    const scored=shuffle(pool).map(v=>({v, d:Math.abs(v.length-correct.length)+Math.random()*3}))
+      .sort((a,b)=>a.d-b.d);
+    scored.forEach(o=>{ if(out.length<3&&!out.includes(o.v)) out.push(o.v); });
+  }
+  return out.slice(0,3);
+}
+function deckKeyOf(deckId, item){ return deckId+':'+item.q; }
+function pickDeckItem(deck){
+  const profile=getCurrentProfile();
+  profile.weak=profile.weak||{};
+  const f=(TIER_FILTERS.find(x=>x.id===state.tierFilter)||TIER_FILTERS[0]).ok;
+  let items=deck.items.filter(it=>f(it.t||'B'));
+  if(items.length<4) items=deck.items;
+  if(items.length>1){
+    const rest=items.filter(it=>deckKeyOf(deck.id,it)!==state.lastCardKey);
+    if(rest.length) items=rest;
+  }
+  const weakItems=items.filter(it=>profile.weak[deckKeyOf(deck.id,it)]);
+  let item;
+  if(weakItems.length && Math.random()<0.35){
+    item=weakItems[rand(0,weakItems.length-1)];
+  }else{
+    let total=0; items.forEach(it=>total+=TIER_WEIGHT[it.t||'B']||1);
+    let r=Math.random()*total;
+    item=items[items.length-1];
+    for(const it of items){ r-=TIER_WEIGHT[it.t||'B']||1; if(r<=0){ item=it; break; } }
+  }
+  state.lastCardKey=deckKeyOf(deck.id,item);
+  return {item, isReview:!!profile.weak[deckKeyOf(deck.id,item)]};
+}
+const CARD_MODES={
+  fwd:{
+    build(deck,item){ return { correct:item.a, wrong:item.w, get:it=>it.a, qHTML:'<div class="qword">'+escHTML(item.q)+'</div><div class="qprompt">'+escHTML(deck.prompt||'意味は?')+'</div>' }; }
+  },
+  rev:{
+    build(deck,item){ return { correct:item.q, wrong:item.rw, get:it=>it.q, qHTML:'<div class="qword">'+escHTML(item.a)+'</div><div class="qprompt">'+escHTML(deck.revPrompt||'にあたる語は?')+'</div>' }; }
+  },
+  yomi:{
+    build(deck,item){ return { correct:item.a, wrong:item.wr, get:it=>it.a, qHTML:'<div class="qword">'+(item.s?renderSentence(item.s,0):'<u>'+escHTML(item.q)+'</u>')+'</div><div class="qprompt">下線の読みは?</div>' }; }
+  },
+  kaki:{
+    build(deck,item){ return { correct:item.q, wrong:item.wk, get:it=>it.q, qHTML:'<div class="qword">'+renderSentence(item.s,1)+'</div><div class="qprompt">下線を漢字で書くと?</div>' }; }
+  },
+};
+function makeDeckGen(deck, mode){
+  const pool = mode.type==='kaki' ? Object.assign({}, deck, {items:deck.items.filter(it=>it.s&&SENT_RE.test(it.s))}) : deck;
+  return function(){
+    const {item,isReview}=pickDeckItem(pool);
+    const b=CARD_MODES[mode.type].build(deck,item);
+    const tier=item.t||'B';
+    const head='<div style="text-align:center"><span class="qtier">'+(TIER_LABEL_CARD[tier]||'')+'</span>'+(isReview?'<span class="qreview">🔁 ふくしゅう</span>':'')+'</div>';
+    const explain='<b>'+escHTML(item.q)+'</b> ＝ '+escHTML(item.a)+(item.n?'<br>'+escHTML(item.n):'')+(item.s&&SENT_RE.test(item.s)?'<br>例：'+escHTML(item.s.replace(SENT_RE,'$1（$2）')):'');
+    return { kind:'card', qHTML:head+b.qHTML, correctText:b.correct,
+      distractors:pickDistractors(pool,item,b.correct,b.get,b.wrong),
+      explain, cardKey:deckKeyOf(deck.id,item) };
+  };
+}
+(function buildDeckTopics(){
+  window.DECKS.forEach(deck=>{
+    const lv=deck.level;
+    TOPICS[lv]=TOPICS[lv]||[];
+    (deck.modes||['fwd']).forEach(m=>{
+      const mode=typeof m==='string'?{type:m}:m;
+      TOPICS[lv].push({id:deck.id+'_'+(mode.id||mode.type), name:mode.label||deck.name, deck:true, gen:makeDeckGen(deck,mode)});
+    });
+  });
+})();
+
 /* ---------- state ---------- */
 const QUESTIONS_PER_SET=10, POINTS_PER_QUESTION=10, SETS_PER_CYCLE=10;
 let state = {
+  subject:'math',
+  tierFilter:'all',
+  lastCardKey:null,
   grade:3,
   topicIdx:0,
   current:null,
@@ -1362,24 +1493,62 @@ const mainBtn=document.getElementById('mainBtn');
 const progressTextEl=document.getElementById('progressText');
 const streakTextEl=document.getElementById('streakText');
 
+function currentLevels(){ return subjectOf(state.subject).levels; }
 function setAccent(grade){
-  const g=GRADES.find(x=>x.id===grade);
+  const g=currentLevels().find(x=>x.id===grade) || currentLevels()[0];
   document.documentElement.style.setProperty('--accent', getComputedStyle(document.documentElement).getPropertyValue(g.color));
   document.documentElement.style.setProperty('--accent-bg', getComputedStyle(document.documentElement).getPropertyValue(g.bg));
 }
 
 function renderTabs(){
   tabsEl.innerHTML='';
-  GRADES.forEach(g=>{
+  currentLevels().forEach(g=>{
     const el=document.createElement('div');
     el.className='tab'+(g.id===state.grade?' active':'');
-    el.innerHTML=`<span class="num">${g.id}</span>年生`;
+    el.innerHTML= state.subject==='math' ? `<span class="num">${g.id}</span>年生` : escHTML(g.label);
     el.onclick=()=>{
       state.grade=g.id; state.topicIdx=0;
       setAccent(state.grade);
       renderTabs(); renderTopics(); state.setIndex=1; startNewSet();
     };
     tabsEl.appendChild(el);
+  });
+}
+
+function renderSubjectTabs(){
+  const el=document.getElementById('subjectTabs');
+  el.innerHTML='';
+  SUBJECTS.forEach(sb=>{
+    const d=document.createElement('div');
+    d.className='tab'+(sb.id===state.subject?' active':'');
+    d.textContent=sb.label;
+    d.onclick=()=>{
+      if(sb.id===state.subject) return;
+      state.subject=sb.id;
+      state.grade=sb.levels[0].id; state.topicIdx=0; state.setIndex=1;
+      applySubject();
+    };
+    el.appendChild(d);
+  });
+}
+function applySubject(){
+  const sb=subjectOf(state.subject);
+  document.getElementById('coverTitle').textContent=sb.cover;
+  document.getElementById('coverSub').textContent=sb.sub;
+  document.querySelector('.scratch-wrap').classList.toggle('hidden', state.subject!=='math');
+  document.getElementById('tierBar').classList.toggle('hidden', state.subject==='math');
+  setAccent(state.grade);
+  renderSubjectTabs(); renderTabs(); renderTopics(); renderTierBar(); startNewSet();
+}
+function renderTierBar(){
+  const el=document.getElementById('tierBar');
+  el.innerHTML='';
+  TIER_FILTERS.forEach(f=>{
+    const c=document.createElement('div');
+    c.className='chip'+(f.id===state.tierFilter?' active':'');
+    c.textContent=f.label;
+    c.onclick=()=>{ state.tierFilter=f.id; renderTierBar(); state.setIndex=1; startNewSet(); };
+    el.appendChild(c);
   });
 }
 
@@ -1549,7 +1718,9 @@ window.addEventListener('resize', setupScratchCanvas);
 function renderProblem(problem){
   diagramEl.innerHTML='';
   questionEl.innerHTML='';
-  if(problem.kind==='vertical'){
+  if(problem.kind==='card'){
+    questionEl.innerHTML = problem.qHTML;
+  }else if(problem.kind==='vertical'){
     const width=Math.max(String(problem.a).length, String(problem.b).length)+1;
     questionEl.innerHTML = `
       <div class="hissan">
@@ -1660,6 +1831,11 @@ mainBtn.addEventListener('click', ()=>{
     }
     const t=TOPICS[state.grade][state.topicIdx];
     recordResult(state.grade, t.id, ok);
+    if(problem.kind==='card'){
+      profile.weak=profile.weak||{};
+      if(ok) delete profile.weak[problem.cardKey]; else profile.weak[problem.cardKey]=1;
+      saveProfiles();
+    }
     feedbackEl.className='feedback show '+(ok?'good':'bad');
     if(ok){
       feedbackEl.innerHTML = '<b>◯ せいかい！</b>';
@@ -1708,11 +1884,8 @@ document.getElementById('catZoomCard').addEventListener('click', (e)=>{
   }
   setupScratchCanvas();
   renderUserBar();
-  setAccent(state.grade);
-  renderTabs();
-  renderTopics();
   renderCatBar();
-  startNewSet();
+  applySubject();
 })();
 
 if('serviceWorker' in navigator){

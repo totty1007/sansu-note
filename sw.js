@@ -1,9 +1,19 @@
 // さんすうノート: オフラインでも遊べるようにする最小限のキャッシュ
-const CACHE_NAME = 'sansu-note-v3';
+const CACHE_NAME = 'sansu-note-v4';
 const CORE_FILES = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './data/kanji-e.js',
+  './data/kanji-j.js',
+  './data/kanji-h.js',
+  './data/kobun-j.js',
+  './data/kobun-h.js',
+  './data/eigo-tango-e.js',
+  './data/eigo-tango-j.js',
+  './data/eigo-tango-h.js',
+  './data/eigo-jukugo-j.js',
+  './data/eigo-jukugo-h.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
