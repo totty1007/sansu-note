@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>さんすうノート</title>
-<meta name="description" content="3年生から6年生までの算数を、コツコツ練習できる問題集アプリ">
+<title>自主学習アプリ</title>
+<meta name="description" content="算数・数学・国語・英語を、コツコツ自主学習できる問題集アプリ">
 <meta name="theme-color" content="#F2A65A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="さんすうノート">
+<meta name="apple-mobile-web-app-title" content="自主学習">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
@@ -36,6 +36,12 @@
     --g5-bg:#E4F5EA;
     --g6:#9C7FD1;
     --g6-bg:#EEE7F9;
+    --g7:#E27D9B;
+    --g7-bg:#FBE6EC;
+    --g8:#3FB5B0;
+    --g8-bg:#DFF4F3;
+    --g9:#D4A017;
+    --g9-bg:#FAF0CF;
     --accent: var(--g3);
     --accent-bg: var(--g3-bg);
   }
@@ -348,6 +354,14 @@
   .btn:disabled{ opacity:.4; cursor:not-allowed; }
   .btn:disabled:active{ transform:none; }
 
+  .qtext{ font-size:17px; font-weight:700; line-height:1.7; text-align:left; word-break:break-word; margin:4px 2px; }
+  .qmath{ font-size:22px; font-weight:700; line-height:1.9; text-align:center; word-break:break-word; margin:4px 0; }
+  .qmath sup, .choice-btn sup{ font-size:.65em; }
+  .qmath sub, .choice-btn sub{ font-size:.65em; }
+  .passage,.qtext,.qword,.choice-btn{ font-family:system-ui,-apple-system,'Segoe UI',Arial,'Hiragino Sans','Yu Gothic','Meiryo',sans-serif; }
+  .passage{ background:var(--accent-bg); border:1.5px solid var(--line); border-radius:10px; padding:10px 12px; font-size:14px; line-height:1.75; font-weight:400; text-align:left; margin:2px 0 10px; max-height:260px; overflow-y:auto; }
+  .tabs .tab{ min-width:0; }
+  .tab.tab-sm{ font-size:13px; padding:12px 2px 10px; }
   .subject-tabs{ margin-bottom:6px; }
   .subject-tabs .tab{ font-weight:700; }
   .tier-bar{ margin-top:-4px; }
@@ -582,7 +596,7 @@
 <div class="app">
 
   <div class="cover">
-    <h1 id="coverTitle">さんすうノート</h1>
+    <h1 id="coverTitle">自主学習アプリ</h1>
     <p id="coverSub">3年生から6年生までの算数を、コツコツ練習しよう</p>
   </div>
 
@@ -682,17 +696,8 @@
 </div>
 <div class="cat-toast" id="catToast"></div>
 
-<script>window.DECKS=[];function registerDeck(d){window.DECKS.push(d);}</script>
-<script src="data/kanji-e.js"></script>
-<script src="data/kanji-j.js"></script>
-<script src="data/kanji-h.js"></script>
-<script src="data/kobun-j.js"></script>
-<script src="data/kobun-h.js"></script>
-<script src="data/eigo-tango-e.js"></script>
-<script src="data/eigo-tango-j.js"></script>
-<script src="data/eigo-tango-h.js"></script>
-<script src="data/eigo-jukugo-j.js"></script>
-<script src="data/eigo-jukugo-h.js"></script>
+<script>window.DECKS=[];function registerDeck(d){window.DECKS.push(d);}
+window.MATHREG=[];function registerMath(level,topics){window.MATHREG.push({level:level,topics:topics});}</script>
 <script>
 /* ---------- utilities ---------- */
 function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
@@ -718,6 +723,41 @@ function shuffle(arr){
   for(let i=a.length-1;i>0;i--){ const j=rand(0,i); [a[i],a[j]]=[a[j],a[i]]; }
   return a;
 }
+
+/* ---------- 数学用: 式など(HTML)を選択肢にするカード問題 ---------- */
+function mkCard(qHTML, correct, wrong, explain){
+  const seen=new Set([String(correct)]); const d=[];
+  (wrong||[]).forEach(w=>{ const t=String(w); if(!seen.has(t)){ seen.add(t); d.push(t); } });
+  return { kind:'card', html:true, qHTML:'<div class="qmath">'+qHTML+'</div>', correctText:String(correct),
+           distractors:d.slice(0,3), explain:explain||'', cardKey:null };
+}
+function sup(x){ return '<sup>'+x+'</sup>'; }
+function sqrtHTML(x){ return '√<span style="text-decoration:overline">'+x+'</span>'; }
+
+function escHTML(x){ return String(x).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+</script>
+<script src="data/kanji-e.js"></script>
+<script src="data/kanji-j.js"></script>
+<script src="data/kanji-h.js"></script>
+<script src="data/kobun-j.js"></script>
+<script src="data/kobun-h.js"></script>
+<script src="data/eigo-tango-e.js"></script>
+<script src="data/eigo-tango-j.js"></script>
+<script src="data/eigo-tango-h.js"></script>
+<script src="data/eigo-jukugo-j.js"></script>
+<script src="data/eigo-jukugo-h.js"></script>
+<script src="data/kobun-bunpo.js"></script>
+<script src="data/eigo-bunpo-j.js"></script>
+<script src="data/eigo-bunpo-h.js"></script>
+<script src="data/eigo-read-j.js"></script>
+<script src="data/eigo-read-h.js"></script>
+<script src="data/sugaku-j1.js"></script>
+<script src="data/sugaku-j2.js"></script>
+<script src="data/sugaku-j3.js"></script>
+<script src="data/sugaku-h1.js"></script>
+<script src="data/sugaku-h2.js"></script>
+<script src="data/sugaku-h3.js"></script>
+<script>
 
 /* ---------- 4択のダミー選択肢(distractor)生成 ---------- */
 function genFractionDistractors(correct){
@@ -854,7 +894,7 @@ function getDistractorValueSets(problem){
   return genSingleDistractors(a.value, {decimal:a.type==='decimal', step:problem.distractorStep, range:problem.distractorRange});
 }
 function formatChoiceFromValueSet(problem, valueSet){
-  if(problem.kind==='card') return escHTML(valueSet);
+  if(problem.kind==='card') return problem.html ? String(valueSet) : escHTML(valueSet);
   if(problem.answerFormat==='fraction') return fracHTML(valueSet.n, valueSet.d);
   if(problem.answerFormat==='ratio') return valueSet.a+':'+valueSet.b;
   if(problem.answerFormat==='time') return pad2(valueSet.h)+'時'+pad2(valueSet.m)+'分';
@@ -1179,13 +1219,22 @@ const LEVELS_KE=[
   {id:'j', label:'中学', color:'--g4', bg:'--g4-bg'},
   {id:'h', label:'高校・受験', color:'--g6', bg:'--g6-bg'},
 ];
-const SUBJECTS=[
-  {id:'math',   label:'さんすう', cover:'さんすうノート', sub:'3年生から6年生までの算数を、コツコツ練習しよう', levels:GRADES},
-  {id:'kokugo', label:'こくご',   cover:'こくごノート',   sub:'漢字と古文単語を、くり返して覚えよう', levels:LEVELS_KE.map(l=>({...l, id:'k_'+l.id}))},
-  {id:'eigo',   label:'えいご',   cover:'えいごノート',   sub:'英単語と英熟語を、くり返して覚えよう', levels:LEVELS_KE.map(l=>({...l, id:'e_'+l.id}))},
+const LEVELS_SUGAKU=[
+  {id:'s_j1', label:'中1', color:'--g3', bg:'--g3-bg'},
+  {id:'s_j2', label:'中2', color:'--g4', bg:'--g4-bg'},
+  {id:'s_j3', label:'中3', color:'--g5', bg:'--g5-bg'},
+  {id:'s_h1', label:'数Ⅰ・A', color:'--g6', bg:'--g6-bg'},
+  {id:'s_h2', label:'数Ⅱ・B', color:'--g7', bg:'--g7-bg'},
+  {id:'s_h3', label:'数Ⅲ', color:'--g8', bg:'--g8-bg'},
 ];
+const SUBJECTS=[
+  {id:'math',   label:'さんすう', cover:'自主学習アプリ', sub:'3年生から6年生までの算数を、コツコツ練習しよう', levels:GRADES},
+  {id:'suugaku',label:'すうがく', cover:'自主学習アプリ', sub:'中学・高校の数学を、計算と問題でコツコツ練習しよう', levels:LEVELS_SUGAKU},
+  {id:'kokugo', label:'こくご',   cover:'自主学習アプリ', sub:'漢字・古文単語・古文文法を、くり返して覚えよう', levels:LEVELS_KE.map(l=>({...l, id:'k_'+l.id}))},
+  {id:'eigo',   label:'えいご',   cover:'自主学習アプリ', sub:'英単語・熟語・文法・長文を、くり返して練習しよう', levels:LEVELS_KE.map(l=>({...l, id:'e_'+l.id}))},
+];
+const MATH_SUBJECTS=['math','suugaku'];
 function subjectOf(id){ return SUBJECTS.find(x=>x.id===id); }
-function escHTML(x){ return String(x).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 const TIER_WEIGHT={S:5, A:3, B:1};
 const TIER_LABEL_CARD={S:'◎ 最重要', A:'○ 重要', B:'△ 標準'};
 const TIER_FILTERS=[
@@ -1248,6 +1297,12 @@ const CARD_MODES={
   yomi:{
     build(deck,item){ return { correct:item.a, wrong:item.wr, get:it=>it.a, qHTML:'<div class="qword">'+(item.s?renderSentence(item.s,0):'<u>'+escHTML(item.q)+'</u>')+'</div><div class="qprompt">下線の読みは?</div>' }; }
   },
+  qa:{
+    build(deck,item){ return { correct:item.a, wrong:item.w, get:it=>it.a, qHTML:'<div class="qtext">'+escHTML(item.q).replace(/\n/g,'<br>')+'</div>'+(deck.prompt?'<div class="qprompt">'+escHTML(deck.prompt)+'</div>':'') }; }
+  },
+  read:{
+    build(deck,item){ return { correct:item.a, wrong:item.w, get:it=>it.a, qHTML:'<div class="passage">'+escHTML((deck.passages||{})[item.p]||'').replace(/\n/g,'<br>')+'</div><div class="qtext">'+escHTML(item.q).replace(/\n/g,'<br>')+'</div>' }; }
+  },
   kaki:{
     build(deck,item){ return { correct:item.q, wrong:item.wk, get:it=>it.q, qHTML:'<div class="qword">'+renderSentence(item.s,1)+'</div><div class="qprompt">下線を漢字で書くと?</div>' }; }
   },
@@ -1259,13 +1314,15 @@ function makeDeckGen(deck, mode){
     const b=CARD_MODES[mode.type].build(deck,item);
     const tier=item.t||'B';
     const head='<div style="text-align:center"><span class="qtier">'+(TIER_LABEL_CARD[tier]||'')+'</span>'+(isReview?'<span class="qreview">🔁 ふくしゅう</span>':'')+'</div>';
-    const explain='<b>'+escHTML(item.q)+'</b> ＝ '+escHTML(item.a)+(item.n?'<br>'+escHTML(item.n):'')+(item.s&&SENT_RE.test(item.s)?'<br>例：'+escHTML(item.s.replace(SENT_RE,'$1（$2）')):'');
+    const isQA = mode.type==='qa' || mode.type==='read';
+    const explain = isQA ? '<b>答え：</b>'+escHTML(item.a)+(item.n?'<br>'+escHTML(item.n):'') : '<b>'+escHTML(item.q)+'</b> ＝ '+escHTML(item.a)+(item.n?'<br>'+escHTML(item.n):'')+(item.s&&SENT_RE.test(item.s)?'<br>例：'+escHTML(item.s.replace(SENT_RE,'$1（$2）')):'');
     return { kind:'card', qHTML:head+b.qHTML, correctText:b.correct,
       distractors:pickDistractors(pool,item,b.correct,b.get,b.wrong),
       explain, cardKey:deckKeyOf(deck.id,item) };
   };
 }
 (function buildDeckTopics(){
+  window.MATHREG.forEach(r=>{ TOPICS[r.level]=TOPICS[r.level]||[]; r.topics.forEach(t=>TOPICS[r.level].push(t)); });
   window.DECKS.forEach(deck=>{
     const lv=deck.level;
     TOPICS[lv]=TOPICS[lv]||[];
@@ -1506,6 +1563,7 @@ function renderTabs(){
     const el=document.createElement('div');
     el.className='tab'+(g.id===state.grade?' active':'');
     el.innerHTML= state.subject==='math' ? `<span class="num">${g.id}</span>年生` : escHTML(g.label);
+    if(state.subject!=='math') el.classList.add('tab-sm');
     el.onclick=()=>{
       state.grade=g.id; state.topicIdx=0;
       setAccent(state.grade);
@@ -1535,8 +1593,8 @@ function applySubject(){
   const sb=subjectOf(state.subject);
   document.getElementById('coverTitle').textContent=sb.cover;
   document.getElementById('coverSub').textContent=sb.sub;
-  document.querySelector('.scratch-wrap').classList.toggle('hidden', state.subject!=='math');
-  document.getElementById('tierBar').classList.toggle('hidden', state.subject==='math');
+  document.querySelector('.scratch-wrap').classList.toggle('hidden', !MATH_SUBJECTS.includes(state.subject));
+  document.getElementById('tierBar').classList.toggle('hidden', MATH_SUBJECTS.includes(state.subject));
   setAccent(state.grade);
   renderSubjectTabs(); renderTabs(); renderTopics(); renderTierBar(); startNewSet();
 }
@@ -1831,7 +1889,7 @@ mainBtn.addEventListener('click', ()=>{
     }
     const t=TOPICS[state.grade][state.topicIdx];
     recordResult(state.grade, t.id, ok);
-    if(problem.kind==='card'){
+    if(problem.kind==='card' && problem.cardKey){
       profile.weak=profile.weak||{};
       if(ok) delete profile.weak[problem.cardKey]; else profile.weak[problem.cardKey]=1;
       saveProfiles();

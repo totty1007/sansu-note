@@ -1,7 +1,7 @@
 {
-  "name": "さんすうノート",
-  "short_name": "さんすうノート",
-  "description": "3年生から6年生までの算数を、コツコツ練習できる問題集アプリ",
+  "name": "自主学習アプリ",
+  "short_name": "自主学習",
+  "description": "算数・数学・国語・英語を、コツコツ自主学習できる問題集アプリ",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

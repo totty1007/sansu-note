@@ -1,5 +1,5 @@
-// さんすうノート: オフラインでも遊べるようにする最小限のキャッシュ
-const CACHE_NAME = 'sansu-note-v4';
+// 自主学習アプリ: オフラインでも遊べるようにする最小限のキャッシュ
+const CACHE_NAME = 'sansu-note-v5';
 const CORE_FILES = [
   './',
   './index.html',
@@ -14,6 +14,17 @@ const CORE_FILES = [
   './data/eigo-tango-h.js',
   './data/eigo-jukugo-j.js',
   './data/eigo-jukugo-h.js',
+  './data/kobun-bunpo.js',
+  './data/eigo-bunpo-j.js',
+  './data/eigo-bunpo-h.js',
+  './data/eigo-read-j.js',
+  './data/eigo-read-h.js',
+  './data/sugaku-j1.js',
+  './data/sugaku-j2.js',
+  './data/sugaku-j3.js',
+  './data/sugaku-h1.js',
+  './data/sugaku-h2.js',
+  './data/sugaku-h3.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
