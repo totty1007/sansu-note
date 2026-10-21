@@ -402,6 +402,9 @@
     font-size:22px;
     margin-bottom:8px;
   }
+  .daily-bonus{ margin:10px 0; font-size:15px; line-height:1.7; font-weight:700; color:#6b4a00; }
+  .daily-bonus:empty{ display:none; }
+  .daily-bonus .db-line{ background:#fff4d6; border-radius:12px; padding:6px 10px; margin:6px 0; }
   .set-result-score{
     font-size:15px;
     color:var(--ink-soft);
@@ -649,6 +652,7 @@
         <div class="set-result-emoji" id="setResultEmoji">🎉</div>
         <div class="set-result-title" id="setResultTitle">セット1 クリア！</div>
         <div class="set-result-score" id="setResultScore">10問中 0問正解（0点）</div>
+        <div class="daily-bonus" id="dailyBonusBox"></div>
         <div class="actions">
           <button class="btn" id="nextSetBtn">つぎのセットへ</button>
         </div>
@@ -1357,7 +1361,8 @@ let profilesState = { users:[], currentUser:null, data:{} };
 
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function makeEmptyProfile(){
-  return { totalPoints:0, streak:0, todayDate:todayStr(), todayAttempted:0, todayCorrect:0, progress:{} };
+  return { totalPoints:0, streak:0, todayDate:todayStr(), todayAttempted:0, todayCorrect:0, progress:{},
+    bonusNormal:0, bonusSilver:0, dayStreak:0, lastSetDate:null, setsDate:null, setsToday:0 };
 }
 function loadProfiles(){
   try{
@@ -1449,9 +1454,9 @@ const CAT_LORE={
   jose_rainbow:'虹のかなたからやってきた、伝説の聖猫ジョゼ。その姿を見た者には幸運がおとずれるといわれる、まぼろしの存在です。',
 };
 const POINTS_PER_CAT=100, CATS_PER_EVOLVE=5;
-function computeCatState(totalPoints){
-  const totalNormal=Math.floor(totalPoints/POINTS_PER_CAT);
-  const totalSilver=Math.floor(totalNormal/CATS_PER_EVOLVE);
+function computeCatState(totalPoints, bonusNormal=0, bonusSilver=0){
+  const totalNormal=Math.floor(totalPoints/POINTS_PER_CAT)+bonusNormal;
+  const totalSilver=Math.floor(totalNormal/CATS_PER_EVOLVE)+bonusSilver;
   const totalGold=Math.floor(totalSilver/CATS_PER_EVOLVE);
   const totalRainbow=Math.floor(totalGold/CATS_PER_EVOLVE);
   return {
@@ -1465,7 +1470,7 @@ function computeCatState(totalPoints){
   };
 }
 function renderCatBar(){
-  const st=computeCatState(getCurrentProfile().totalPoints);
+  const p0=getCurrentProfile(); const st=computeCatState(p0.totalPoints, p0.bonusNormal||0, p0.bonusSilver||0);
   document.getElementById('catPointsText').textContent = `🐱 つぎのねこまで あと${POINTS_PER_CAT-st.pointsInCycle}点`;
 }
 const TIER_LABEL={normal:'ふつう', silver:'シルバー', gold:'ゴールド'};
@@ -1506,7 +1511,7 @@ function renderCatBonusSlot(container, count){
 }
 function renderCatBook(){
   const profile=getCurrentProfile();
-  const st=computeCatState(profile.totalPoints);
+  const st=computeCatState(profile.totalPoints, profile.bonusNormal||0, profile.bonusSilver||0);
   document.getElementById('catProgressText').textContent =
     `つぎのねこまで あと${POINTS_PER_CAT-st.pointsInCycle}点　|　ふつう${st.normalCount}匹　シルバー${st.silverCount}匹　ゴールド${st.goldCount}匹`;
   renderCatTierRow(document.getElementById('catTierNormal'), st.normalCount, 'normal');
@@ -1523,7 +1528,8 @@ function showCatToast(html, label){
   catToastTimer=setTimeout(()=>{ el.classList.remove('show'); }, 3200);
 }
 function checkCatMilestones(beforePoints, afterPoints){
-  const before=computeCatState(beforePoints), after=computeCatState(afterPoints);
+  const p=getCurrentProfile(), bn=p.bonusNormal||0, bs=p.bonusSilver||0;
+  const before=computeCatState(beforePoints,bn,bs), after=computeCatState(afterPoints,bn,bs);
   if(after.totalRainbow>before.totalRainbow){
     showCatToast(`<img src="${CAT_BONUS.img}" alt="${CAT_BONUS.name}">`, `🌈 でんせつのねこを<br>ゲット！「${CAT_BONUS.name}」`);
   }else if(after.totalGold>before.totalGold){
@@ -1845,7 +1851,46 @@ function updateTopBar(){
   streakTextEl.textContent = `🔥 ${profile.streak}連続`;
 }
 
+/* ---------- れんぞくボーナス ----------
+   ・7日れんぞくで1セット(10問)クリア → シルバーねこ1匹
+   ・1日2セット目以降はクリアするたび → ふつうのねこ2匹 */
+const STREAK_DAYS_FOR_SILVER=7, SETS_FOR_DAILY_BONUS=2, DAILY_BONUS_CATS=2;
+function localDateStr(d){
+  d=d||new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function yesterdayStr(){ const d=new Date(); d.setDate(d.getDate()-1); return localDateStr(d); }
+function recordSetCompleted(){
+  const profile=getCurrentProfile();
+  const today=localDateStr();
+  const msgs=[];
+  if(profile.setsDate!==today){ profile.setsDate=today; profile.setsToday=0; }
+  profile.setsToday=(profile.setsToday||0)+1;
+  // 日またぎ連続: その日の最初のセットクリアで判定
+  if(profile.lastSetDate!==today){
+    profile.dayStreak = (profile.lastSetDate===yesterdayStr()) ? (profile.dayStreak||0)+1 : 1;
+    profile.lastSetDate=today;
+    if(profile.dayStreak>=STREAK_DAYS_FOR_SILVER){
+      profile.bonusSilver=(profile.bonusSilver||0)+1;
+      profile.dayStreak=0;
+      msgs.push(`🥈 ${STREAK_DAYS_FOR_SILVER}日れんぞく たっせい！<br>シルバーねこを1匹ゲット！`);
+    }else{
+      msgs.push(`📅 れんぞく ${profile.dayStreak}日め（あと${STREAK_DAYS_FOR_SILVER-profile.dayStreak}日でシルバーねこ）`);
+    }
+  }
+  if(profile.setsToday>=SETS_FOR_DAILY_BONUS){
+    profile.bonusNormal=(profile.bonusNormal||0)+DAILY_BONUS_CATS;
+    msgs.push(`🐱 きょう${profile.setsToday}セットクリア！れんぞくボーナスで<br>ふつうのねこを${DAILY_BONUS_CATS}匹ゲット！`);
+  }else if(profile.setsToday<SETS_FOR_DAILY_BONUS){
+    msgs.push(`あと${SETS_FOR_DAILY_BONUS-profile.setsToday}セットでふつうのねこ${DAILY_BONUS_CATS}匹ボーナス！`);
+  }
+  saveProfiles();
+  document.getElementById('dailyBonusBox').innerHTML = msgs.map(m=>`<div class="db-line">${m}</div>`).join('');
+  renderCatBar();
+}
+
 function showSetResult(){
+  recordSetCompleted();
   document.getElementById('quizPlay').classList.add('hidden');
   const correct=state.setCorrectCount;
   document.getElementById('setResultEmoji').textContent =
