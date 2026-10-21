@@ -872,6 +872,19 @@ function genSingleDistractors(correct, opts){
   const step = opts.step || (isDecimal
     ? Math.max(0.1, Math.round(Math.abs(correct)*0.1*10)/10)
     : Math.max(1, Math.round(Math.abs(correct)*0.05)));
+  // 2けた以上の整数は、下1けたでこたえがバレないよう、ダミーも下1けたをそろえる(±10の倍数)
+  if(!isDecimal && Math.abs(correct)>=10){
+    const unit = 10*Math.max(1, Math.round(step/10));
+    const pool=[];
+    for(let k=1;k<=6;k++){
+      for(const sgn of [1,-1]){
+        const x=roundVal(correct+sgn*k*unit);
+        if(x>=min && x<=max && !seen.has(x)) pool.push(x);
+      }
+      if(pool.length>=6) break;
+    }
+    shuffle(pool.slice(0,6)).slice(0,3).forEach(tryAdd);
+  }
   const smallSteps = isDecimal ? [0.1,-0.1,0.2,-0.2] : [1,-1,2,-2,3,-3];
   const candidates=[...smallSteps, step, -step, step*2, -step*2];
   for(const d of candidates){ if(out.length>=3) break; tryAdd(correct+d); }
