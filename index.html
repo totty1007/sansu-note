@@ -672,11 +672,11 @@
     <div class="cat-progress" id="catProgressText"></div>
     <div class="cat-tier-label">ふつうのねこ</div>
     <div class="cat-tier" id="catTierNormal"></div>
-    <div class="cat-tier-label">シルバーのねこ（ふつうを5匹集めると進化）</div>
+    <div class="cat-tier-label">シルバーのねこ（ふつうを5匹そろえた次の1匹でランクアップ）</div>
     <div class="cat-tier" id="catTierSilver"></div>
-    <div class="cat-tier-label">ゴールドのねこ（シルバーを5匹集めると進化）</div>
+    <div class="cat-tier-label">ゴールドのねこ（シルバーを5匹そろえた次の1匹でランクアップ）</div>
     <div class="cat-tier" id="catTierGold"></div>
-    <div class="cat-tier-label">🌈 でんせつのねこ（ゴールドを5匹集めるとゲット）</div>
+    <div class="cat-tier-label">🌈 でんせつのねこ（ゴールドを5匹そろえた次の1匹でゲット）</div>
     <div class="cat-tier" id="catTierBonus"></div>
   </div>
 </div>
@@ -1466,7 +1466,7 @@ const CAT_LORE={
   sensei_gold:'梟（ふくろう）のすがたになった賢者。夜になるとこっそり勉強を教えてくれるという伝説があります。',
   jose_rainbow:'虹のかなたからやってきた、伝説の聖猫ジョゼ。その姿を見た者には幸運がおとずれるといわれる、まぼろしの存在です。',
 };
-const POINTS_PER_CAT=100, CATS_PER_EVOLVE=5;
+const POINTS_PER_CAT=100, CATS_PER_EVOLVE=6; // 5匹そろったあと6匹目でランクアップ
 function computeCatState(totalPoints, bonusNormal=0, bonusSilver=0){
   const totalNormal=Math.floor(totalPoints/POINTS_PER_CAT)+bonusNormal;
   const totalSilver=Math.floor(totalNormal/CATS_PER_EVOLVE)+bonusSilver;
