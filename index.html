@@ -1495,6 +1495,7 @@ function showCatZoom(imgSrc, name, loreKey){
   document.getElementById('catZoomFlipper').classList.remove('flipped');
   document.getElementById('catZoomOverlay').classList.remove('hidden');
 }
+// 図鑑は累計(これまでにゲットした数)で表示。ランクアップで下位のシールが集め直しになっても消えない
 function renderCatTierRow(container, count, tierKey){
   container.innerHTML='';
   const unlocked=Math.min(count,5);
@@ -1527,9 +1528,9 @@ function renderCatBook(){
   const st=computeCatState(profile.totalPoints, profile.bonusNormal||0, profile.bonusSilver||0);
   document.getElementById('catProgressText').textContent =
     `つぎのねこまで あと${POINTS_PER_CAT-st.pointsInCycle}点　|　ふつう${st.normalCount}匹　シルバー${st.silverCount}匹　ゴールド${st.goldCount}匹`;
-  renderCatTierRow(document.getElementById('catTierNormal'), st.normalCount, 'normal');
-  renderCatTierRow(document.getElementById('catTierSilver'), st.silverCount, 'silver');
-  renderCatTierRow(document.getElementById('catTierGold'), st.goldCount, 'gold');
+  renderCatTierRow(document.getElementById('catTierNormal'), st.totalNormal, 'normal');
+  renderCatTierRow(document.getElementById('catTierSilver'), st.totalSilver, 'silver');
+  renderCatTierRow(document.getElementById('catTierGold'), st.totalGold, 'gold');
   renderCatBonusSlot(document.getElementById('catTierBonus'), st.rainbowCount);
 }
 let catToastTimer=null;

@@ -1,5 +1,5 @@
 // 自主学習アプリ: オフラインでも遊べるようにする最小限のキャッシュ
-const CACHE_NAME = 'sansu-note-v8';
+const CACHE_NAME = 'sansu-note-v9';
 const CORE_FILES = [
   './',
   './index.html',
