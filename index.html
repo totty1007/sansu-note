@@ -450,6 +450,7 @@
     font-size:12px;
     color:var(--ink-soft);
     gap:8px;
+    flex-wrap:wrap;
   }
   .cat-book-btn{
     font-family:var(--font-round);
@@ -617,6 +618,7 @@
     <div class="cat-bar">
       <span id="catPointsText">🐱 つぎのねこまで あと100点</span>
       <button type="button" id="catBookBtn" class="cat-book-btn">ねこずかん</button>
+      <button type="button" id="catAllBookBtn" class="cat-book-btn">🏆 ずっとずかん</button>
     </div>
 
     <div class="quiz-card">
@@ -678,6 +680,24 @@
     <div class="cat-tier" id="catTierGold"></div>
     <div class="cat-tier-label">🌈 でんせつのねこ（ゴールドを5匹そろえた次の1匹でゲット）</div>
     <div class="cat-tier" id="catTierBonus"></div>
+  </div>
+</div>
+
+<div class="cat-overlay hidden" id="catAllOverlay">
+  <div class="cat-modal">
+    <div class="cat-modal-top">
+      <h2>🏆 ずっとずかん</h2>
+      <button type="button" id="catAllCloseBtn" class="cat-close">×</button>
+    </div>
+    <div class="cat-progress" id="catAllProgressText"></div>
+    <div class="cat-tier-label">ふつうのねこ</div>
+    <div class="cat-tier" id="catAllNormal"></div>
+    <div class="cat-tier-label">シルバーのねこ</div>
+    <div class="cat-tier" id="catAllSilver"></div>
+    <div class="cat-tier-label">ゴールドのねこ</div>
+    <div class="cat-tier" id="catAllGold"></div>
+    <div class="cat-tier-label">🌈 でんせつのねこ</div>
+    <div class="cat-tier" id="catAllBonus"></div>
   </div>
 </div>
 
@@ -1495,7 +1515,6 @@ function showCatZoom(imgSrc, name, loreKey){
   document.getElementById('catZoomFlipper').classList.remove('flipped');
   document.getElementById('catZoomOverlay').classList.remove('hidden');
 }
-// 図鑑は累計(これまでにゲットした数)で表示。ランクアップで下位のシールが集め直しになっても消えない
 function renderCatTierRow(container, count, tierKey){
   container.innerHTML='';
   const unlocked=Math.min(count,5);
@@ -1528,10 +1547,21 @@ function renderCatBook(){
   const st=computeCatState(profile.totalPoints, profile.bonusNormal||0, profile.bonusSilver||0);
   document.getElementById('catProgressText').textContent =
     `つぎのねこまで あと${POINTS_PER_CAT-st.pointsInCycle}点　|　ふつう${st.normalCount}匹　シルバー${st.silverCount}匹　ゴールド${st.goldCount}匹`;
-  renderCatTierRow(document.getElementById('catTierNormal'), st.totalNormal, 'normal');
-  renderCatTierRow(document.getElementById('catTierSilver'), st.totalSilver, 'silver');
-  renderCatTierRow(document.getElementById('catTierGold'), st.totalGold, 'gold');
+  renderCatTierRow(document.getElementById('catTierNormal'), st.normalCount, 'normal');
+  renderCatTierRow(document.getElementById('catTierSilver'), st.silverCount, 'silver');
+  renderCatTierRow(document.getElementById('catTierGold'), st.goldCount, 'gold');
   renderCatBonusSlot(document.getElementById('catTierBonus'), st.rainbowCount);
+}
+// 永久ずかん: これまでにゲットした累計で表示。ランクアップで集め直しになっても消えない
+function renderCatAllBook(){
+  const profile=getCurrentProfile();
+  const st=computeCatState(profile.totalPoints, profile.bonusNormal||0, profile.bonusSilver||0);
+  document.getElementById('catAllProgressText').textContent =
+    `これまでにゲット：ふつう${st.totalNormal}匹　シルバー${st.totalSilver}匹　ゴールド${st.totalGold}匹　でんせつ${st.totalRainbow}匹`;
+  renderCatTierRow(document.getElementById('catAllNormal'), st.totalNormal, 'normal');
+  renderCatTierRow(document.getElementById('catAllSilver'), st.totalSilver, 'silver');
+  renderCatTierRow(document.getElementById('catAllGold'), st.totalGold, 'gold');
+  renderCatBonusSlot(document.getElementById('catAllBonus'), st.totalRainbow);
 }
 let catToastTimer=null;
 function showCatToast(html, label){
@@ -1978,6 +2008,16 @@ mainBtn.addEventListener('click', ()=>{
 document.getElementById('catBookBtn').addEventListener('click', ()=>{
   renderCatBook();
   document.getElementById('catOverlay').classList.remove('hidden');
+});
+document.getElementById('catAllBookBtn').addEventListener('click', ()=>{
+  renderCatAllBook();
+  document.getElementById('catAllOverlay').classList.remove('hidden');
+});
+document.getElementById('catAllCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('catAllOverlay').classList.add('hidden');
+});
+document.getElementById('catAllOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='catAllOverlay') e.currentTarget.classList.add('hidden');
 });
 document.getElementById('catCloseBtn').addEventListener('click', ()=>{
   document.getElementById('catOverlay').classList.add('hidden');
